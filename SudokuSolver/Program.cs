@@ -36,7 +36,7 @@ namespace SudokuSolver
 
         static void Main(string[] args)
         {
-            SudokuSolver.Logics.Solver.Call();
+            SudokuSolver.Solver.Call();
 
         }
     }

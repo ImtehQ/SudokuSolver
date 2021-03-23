@@ -72,7 +72,7 @@ namespace SudokuSolver
 
             sData.Permutations = SolverHelper.Permute(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 
-            if(showDebug)
+            if (showDebug)
                 Console.WriteLine($"Possible line solutions: {sData.Permutations.Count}");
             if (showDebug)
                 Console.WriteLine($"Possible line length: {sData.Permutations[0].Count}");
@@ -83,6 +83,7 @@ namespace SudokuSolver
             sData.ReadSudokuData(input, Dimension.Line);
             sData.ReadSudokuData(input, Dimension.Colum);
             sData.ReadSudokuData(input, Dimension.Block);
+
             if (showDebug)
                 Console.WriteLine("Converted to Sudoku data set model.");
             if (showDebug)
@@ -98,109 +99,39 @@ namespace SudokuSolver
                 Console.WriteLine("------------------------------");
 
 
+            int[] li;
+            int[] ci;
+            int[] bi;
 
-            for (int i = 0; i < 81; i++)
+
+
+
+            for (int o = 0; o < 10; o++)
             {
-                Console.WriteLine($"-{i}-");
-                int[] li = i.getIndexOf(Dimension.Line);
-                Console.WriteLine("L:" + sData.sdLines[li[0]].possiblePermutations.Count());
-                int[] ci = i.getIndexOf(Dimension.Colum);
-                Console.WriteLine("C:"+sData.sdCols[ci[0]].possiblePermutations.Count());
-                int[] bi = i.getIndexOf(Dimension.Block);
-                Console.WriteLine("B:"+sData.sdBlocks[bi[0]].possiblePermutations.Count());
-            }
-            for (int i = 0; i < 81; i++)
-            {
-                sData.CheckISValid(i);
+                for (int i = 0; i < 81; i++)
+                {
+                    sData.CheckISValid(i);
+                }
             }
 
-            int p = 0;
-            for (int y = 0; y < 9; y++)
+
+
+            for (int i = 0; i < 9; i++)
             {
-                int[] li = p.getIndexOf(Dimension.Line);
-                int[] ci = p.getIndexOf(Dimension.Colum);
-                int[] bi = p.getIndexOf(Dimension.Block);
                 Console.WriteLine($"==============================================");
-                Console.WriteLine($"Y: {y} == li: {sData.sdLines[li[0]].possiblePermutations.Count()}, ci: {sData.sdCols[ci[0]].possiblePermutations.Count()}, bi: {sData.sdBlocks[bi[0]].possiblePermutations.Count()}");
+                Console.WriteLine($"Y: {i} ==" +
+                                    $" li: {sData.sdLines[i].possiblePermutations.Count()}," +
+                                    $" ci: {sData.sdCols[i].possiblePermutations.Count()}," +
+                                    $" bi: {sData.sdBlocks[i].possiblePermutations.Count()}");
 
-                for (int x = 0; x < 9; x++)
+                for (int u = 1; u < 10; u++)
                 {
-                    var liresult = sData.sdLines[li[0]].possiblePermutations.Where(g => g[li[1]] == x+1).ToList();
-                    var ciresult = sData.sdCols[ci[0]].possiblePermutations.Where(g => g[ci[1]] == x+1).ToList();
-                    var biresult = sData.sdBlocks[bi[0]].possiblePermutations.Where(g => g[bi[1]] == x+1).ToList();
-
-                    List<int> liresultd = new List<int>();
-                    List<int> ciresultd = new List<int>();
-                    List<int> biresultd = new List<int>();
-
-                    for (int i = 0; i < liresult.Count; i++)
-                    {
-                        liresultd.Add(liresult[i][x]);
-                    }
-                    for (int i = 0; i < ciresult.Count; i++)
-                    {
-                        ciresultd.Add(ciresult[i][x]);
-                    }
-                    for (int i = 0; i < biresult.Count; i++)
-                    {
-                        biresultd.Add(biresult[i][x]);
-                    }
-                    liresultd = liresultd.Distinct().ToList();
-                    ciresultd = ciresultd.Distinct().ToList();
-                    biresultd = biresultd.Distinct().ToList();
-
-                    Console.WriteLine($"---------------------------------");
-                    Console.WriteLine($"li[{li[0]},{li[1]}] == {x + 1} ==  {liresult.Count} | {liresultd.Count} =");
-                    Console.WriteLine($"|||||||||||||||||||||||||||||||||||");
-                    for (int t = 0; t < liresultd.Count; t++)
-                    {
-                        Console.WriteLine(liresultd[t]);
-                    }
-                    Console.WriteLine($"|||||||||||||||||||||||||||||||||||");
-                    Console.WriteLine($"ci[{ci[0]},{ci[1]}] == {x + 1} ==  {ciresult.Count} | {ciresultd.Count} = ");
-                    for (int t = 0; t < ciresultd.Count; t++)
-                    {
-                        Console.WriteLine(ciresultd[t]);
-                    }
-                    Console.WriteLine($"|||||||||||||||||||||||||||||||||||");
-                    Console.WriteLine($"bi[{bi[0]},{bi[1]}] == {x + 1} ==  {biresult.Count} | {biresultd.Count} = ");
-                    for (int t = 0; t < ciresultd.Count; t++)
-                    {
-                        Console.WriteLine(ciresultd[t]);
-                    }
-                    Console.WriteLine($"---------------------------------");
-                    p++;
+                    Console.WriteLine($"Checking {u}, Count: {sData.sdBlocks[i].possiblePermutations.Count(x => x[0] == u)}");
                 }
+                
             }
 
-
-            int[] smallestFound = new int[3];
-            smallestFound[0] = 50000;
-
-            for (int i = 0; i < 81; i++)
-            {
-                int[] li = i.getIndexOf(Dimension.Line);
-                int[] ci = i.getIndexOf(Dimension.Colum);
-                int[] bi = i.getIndexOf(Dimension.Block);
-
-      
-
-                if (sData.sdLines[li[0]].possiblePermutations.Count() < smallestFound[0])
-                {
-
-                }
-
-                if (sData.sdCols[ci[0]].possiblePermutations.Count() < smallestFound[0])
-                {
-
-                }
-
-                if (sData.sdBlocks[bi[0]].possiblePermutations.Count() < smallestFound[0])
-                {
-
-                }
-            }
-            Console.WriteLine($"Index: {smallestFound[2]}, count: {smallestFound[0]}, distinct: {smallestFound[2]}");
+            
 
             Console.ReadLine();
         }

@@ -36,8 +36,6 @@ namespace SudokuSolver
             }
         }
 
-
-
         public void Reset()
         {
             for (int i = 0; i < 9; i++)
@@ -122,28 +120,45 @@ namespace SudokuSolver
             return Array.IndexOf(data, 0);
         }
 
+        /// <summary>
+        /// return true if it can remove something
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public void CheckISValid(int index)
         {
+            int removedCount = 0;
+
             int[] li = index.getIndexOf(Dimension.Line);
             int[] ci = index.getIndexOf(Dimension.Colum);
             int[] bi = index.getIndexOf(Dimension.Block);
 
+            if (sdLines[li[0]].data[li[1]] > 0)
+            {
+//                Console.WriteLine($"=================================== Index [{index}] " +
+//$"location: [{li[0]},{li[1]}]/[{ci[0]},{ci[1]}]/[{bi[0]},{bi[1]}] " +
+//$"|{sdLines[li[0]].possiblePermutations.Count}" +
+//$"|{sdCols[ci[0]].possiblePermutations.Count}" +
+//$"|{sdBlocks[bi[0]].possiblePermutations.Count}| DEFAULT= ({sdLines[li[0]].data[li[1]]})");
+
+                return;
+            }
 
             bool found = false;
-
             List<int> alreadyCheckedNumbers = new List<int>();
             for (int i = 1; i < 10; i++)
             {
-                int removedCount = 0;
+                removedCount = 0;
 
+                
                 if (i == 1)
                 {
                     Console.WriteLine($"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                    Console.WriteLine($"=================================== Index [{index}] " +
-                        $"location: [{li[0]},{li[1]}]/[{ci[0]},{ci[1]}]/[{bi[0]},{bi[1]}] " +
-                        $"|{sdLines[li[0]].possiblePermutations.Count}" +
-                        $"|{sdCols[ci[0]].possiblePermutations.Count}" +
-                        $"|{sdBlocks[bi[0]].possiblePermutations.Count}|");
+                    //Console.WriteLine($"=================================== Index [{index}] " +
+                    //    $"location: [{li[0]},{li[1]}]/[{ci[0]},{ci[1]}]/[{bi[0]},{bi[1]}] " +
+                    //    $"|{sdLines[li[0]].possiblePermutations.Count}" +
+                    //    $"|{sdCols[ci[0]].possiblePermutations.Count}" +
+                    //    $"|{sdBlocks[bi[0]].possiblePermutations.Count}|");
                 }
 
                 if (sdLines[li[0]].data[li[1]] == i)
@@ -201,12 +216,17 @@ namespace SudokuSolver
                         Console.WriteLine($"Index [{index}] , =========== >> NOT FOUND!");
                     }
                 }
-                if (i == 9)
-                    Console.WriteLine($"=================================== Index [{index}] " +
-                        $"location: [{li[0]},{li[1]}]/[{ci[0]},{ci[1]}]/[{bi[0]},{bi[1]}] " +
-                        $"|{sdLines[li[0]].possiblePermutations.Count}" +
-                        $"|{sdCols[ci[0]].possiblePermutations.Count}" +
-                        $"|{sdBlocks[bi[0]].possiblePermutations.Count}| AFTER");
+            }
+        }
+
+        public void CheckDoubles()
+        {
+            for (int y = 0; y < 9; y++)
+            {
+                for (int i = 0; i < 9; i++)
+                {
+
+                }
             }
         }
 
