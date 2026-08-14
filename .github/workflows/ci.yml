@@ -25,6 +25,8 @@ jobs:
             echo "$files"
             exit 1
           fi
+      - name: Test benchmark tooling
+        run: python3 -m unittest scripts.update_benchmark_readme_test
       - name: Vet
         run: go vet ./...
       - name: Test
