@@ -87,6 +87,7 @@ PRs target `main`. Prefer squash merge when repository requirements allow it. Pr
 - Fixed quick fixtures live in `benchmarks/puzzles.json` and are named Easy, Medium, Hard, and Impossible. These are project benchmark profiles, not a universal difficulty standard.
 - `benchmarks/fixtures_test.go` requires every quick benchmark puzzle to be valid, uniquely solvable, and solvable using guaranteed probability-guided steps.
 - The workflow runs normal project validation and builds both `cmd/sudokusolver` and the in-process `cmd/sudokubench` batch runner.
+- SudokuSolver benchmark processes use `GOMAXPROCS=1`; primary benchmark results are intentionally single-threaded.
 - Quick benchmark output is `benchmark-results.json` and `benchmark-results.svg`.
 - Standard comparison output is `standard-benchmark-results.json` and `standard-benchmark-results.svg`.
 - All four result files are uploaded as workflow artifacts and published to the dedicated `benchmark-results` branch. The workflow must never write benchmark results directly to `main`.
@@ -98,13 +99,13 @@ PRs target `main`. Prefer squash merge when repository requirements allow it. Pr
 The standard benchmark is deliberately reproducible and must not silently drift:
 
 - **Norvig Top95:** exactly 95 puzzles committed at `benchmarks/norvig_top95.txt` from Peter Norvig's canonical Top95 set.
-- **Tdoku 17-clue:** exactly 49,158 puzzles from Tdoku's benchmark archive. Exact-count/uniqueness throughput uses the full corpus; probability-guided full solving uses a deterministic 1,000-puzzle sample.
-- **Forum hardest 1905 11+:** deterministic 1,000-puzzle sample from Tdoku's benchmark archive.
+- **Tdoku 17-clue:** exactly 49,158 puzzles remain the source corpus, but routine automatic comparison uses a deterministic **10-puzzle sample** for both exact-count and probability-guided solve throughput.
+- **Forum hardest 1905 11+:** deterministic **10-puzzle sample** from Tdoku's benchmark archive.
 - **Sample seed:** `20260814`.
 - **Pinned Tdoku commit:** `af426180dc53aef89b82868e7b3fdfcf42165654`.
 - **Pinned Tdoku `data.zip` Git blob:** `2ae6e4f8d021d2198069814c7db18bf11fcd9591`.
 
-The workflow verifies both the Tdoku commit and archive blob before benchmarking. Changing the Tdoku revision, corpus, sample seed, or sample size is a benchmark-definition change and requires an explicit development PR with updated documentation.
+The full 49,158-puzzle 17-clue challenge is optional and must only be run explicitly with `scripts/run_standard_benchmarks.py --include-full-min17`; do not make it part of every merge benchmark. The workflow verifies both the Tdoku commit and archive blob before benchmarking. Changing the Tdoku revision, corpus, sample seed, or sample size is a benchmark-definition change and requires an explicit development PR with updated documentation.
 
 The same-runner comparison has two separate metrics and they must not be conflated:
 

@@ -121,6 +121,28 @@ func TestSolveByProbabilitySolvesClassicPuzzleWithGuaranteedSteps(t *testing.T) 
 	}
 }
 
+func TestSearchStateCandidateMaskMatchesGridCandidateMask(t *testing.T) {
+	grid, err := Parse(classicPuzzle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := newSearchState(grid)
+	for idx, value := range grid {
+		if value == 0 && state.candidateMask(idx) != candidateMask(grid, idx) {
+			t.Fatalf("candidate mask mismatch at cell %d", idx)
+		}
+	}
+
+	idx := 2
+	state.place(idx, 4)
+	grid[idx] = 4
+	for cell, value := range grid {
+		if value == 0 && state.candidateMask(cell) != candidateMask(grid, cell) {
+			t.Fatalf("candidate mask mismatch after placement at cell %d", cell)
+		}
+	}
+}
+
 func TestHasSolutionClassicPuzzle(t *testing.T) {
 	grid, err := Parse(classicPuzzle)
 	if err != nil {

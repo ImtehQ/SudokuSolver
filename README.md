@@ -73,7 +73,9 @@ sudokusolver --solve --json --file puzzle.txt
 
 Solution counts use arbitrary-precision integers, so the reported count does not overflow a fixed-width integer. The analysis is exact, not sampled.
 
-Exact enumeration can become expensive for extremely underconstrained grids with very large solution spaces. The intended input is a normal Sudoku puzzle or a partially completed Sudoku of ordinary difficulty.
+The recursive exact counter keeps row, column, and box occupancy as incremental bitmasks. Candidate masks inside the search are therefore calculated with bit operations instead of rescanning the three affected units at every recursive node.
+
+Exact enumeration can still become expensive for extremely underconstrained grids with very large solution spaces. The intended input is a normal Sudoku puzzle or a partially completed Sudoku of ordinary difficulty.
 
 ## Automatic benchmark results
 
@@ -86,12 +88,12 @@ The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves fo
 The same Action also runs a reproducible comparison against public solver-challenge corpora:
 
 - **Norvig Top95:** all 95 canonical hard puzzles, pinned in [`benchmarks/norvig_top95.txt`](benchmarks/norvig_top95.txt).
-- **Tdoku 17-clue corpus:** all 49,158 puzzles are attempted as a full-corpus exact-count challenge and run through pinned Tdoku; a deterministic 1,000-puzzle sample also provides repeatable SudokuSolver exact-count and probability-solve throughput.
-- **Enjoy Sudoku forum hardest 1905 11+:** a deterministic 1,000-puzzle sample for exact uniqueness and probability-guided full solving.
+- **Tdoku 17-clue corpus:** a deterministic **10-puzzle** sample for exact uniqueness and probability-guided full solving.
+- **Enjoy Sudoku forum hardest 1905 11+:** a deterministic **10-puzzle** sample for exact uniqueness and probability-guided full solving.
 
-Each measured workload has a 300-second cap. **A timeout is a benchmark result, not a workflow failure**: the generated table explicitly shows the timeout and continues with the other measurements. This keeps the full 49,158-puzzle challenge visible while still producing useful sample throughput on every run. The first v0.4.0 full-corpus attempt established the initial baseline by exceeding a 3,600-second cap.
+Routine benchmark runs deliberately use 10-puzzle samples so performance iterations stay quick. The full 49,158-puzzle 17-clue corpus remains available through the benchmark script's `--include-full-min17` option for an explicit long-running challenge; it is not attempted automatically on every merge.
 
-For a fair machine-level comparison, the workflow builds **Tdoku at pinned commit `af426180dc53aef89b82868e7b3fdfcf42165654` on the same GitHub-hosted Ubuntu runner**. The Tdoku data archive is verified against Git blob `2ae6e4f8d021d2198069814c7db18bf11fcd9591` before the corpora are used. The deterministic sample seed is `20260814`.
+For a fair machine-level comparison, the workflow builds **Tdoku at pinned commit `af426180dc53aef89b82868e7b3fdfcf42165654` on the same GitHub-hosted Ubuntu runner**. SudokuSolver benchmark processes run with `GOMAXPROCS=1`, keeping the primary comparison single-threaded. The Tdoku data archive is verified against Git blob `2ae6e4f8d021d2198069814c7db18bf11fcd9591` before the corpora are used. The deterministic sample seed is `20260814`.
 
 ![Latest standard Sudoku benchmark comparison](https://raw.githubusercontent.com/ImtehQ/SudokuSolver/benchmark-results/standard-benchmark-results.svg)
 
@@ -103,7 +105,7 @@ The comparison shows two deliberately separate measurements:
 The latest generated files live on the dedicated `benchmark-results` branch:
 
 - `benchmark-results.json` / `benchmark-results.svg` — four project profiles;
-- `standard-benchmark-results.json` / `standard-benchmark-results.svg` — standard challenge comparison, including explicit timeout states.
+- `standard-benchmark-results.json` / `standard-benchmark-results.svg` — standard challenge comparison.
 
 The workflow also uploads all four as run artifacts. Generated benchmark output never writes directly to `main`.
 
