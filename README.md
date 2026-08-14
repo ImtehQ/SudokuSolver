@@ -86,8 +86,10 @@ The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves fo
 The same Action also runs a reproducible comparison against public solver-challenge corpora:
 
 - **Norvig Top95:** all 95 canonical hard puzzles, pinned in [`benchmarks/norvig_top95.txt`](benchmarks/norvig_top95.txt).
-- **Tdoku 17-clue corpus:** all 49,158 puzzles for exact uniqueness throughput, plus a deterministic 1,000-puzzle sample for probability-guided full solving.
-- **Enjoy Sudoku forum hardest 1905 11+:** a deterministic 1,000-puzzle sample for both uniqueness throughput and probability-guided full solving.
+- **Tdoku 17-clue corpus:** all 49,158 puzzles are attempted as a full-corpus exact-count challenge and run through pinned Tdoku; a deterministic 1,000-puzzle sample also provides repeatable SudokuSolver exact-count and probability-solve throughput.
+- **Enjoy Sudoku forum hardest 1905 11+:** a deterministic 1,000-puzzle sample for exact uniqueness and probability-guided full solving.
+
+Each measured workload has a 300-second cap. **A timeout is a benchmark result, not a workflow failure**: the generated table explicitly shows the timeout and continues with the other measurements. This keeps the full 49,158-puzzle challenge visible while still producing useful sample throughput on every run. The first v0.4.0 full-corpus attempt established the initial baseline by exceeding a 3,600-second cap.
 
 For a fair machine-level comparison, the workflow builds **Tdoku at pinned commit `af426180dc53aef89b82868e7b3fdfcf42165654` on the same GitHub-hosted Ubuntu runner**. The Tdoku data archive is verified against Git blob `2ae6e4f8d021d2198069814c7db18bf11fcd9591` before the corpora are used. The deterministic sample seed is `20260814`.
 
@@ -101,7 +103,7 @@ The comparison shows two deliberately separate measurements:
 The latest generated files live on the dedicated `benchmark-results` branch:
 
 - `benchmark-results.json` / `benchmark-results.svg` — four project profiles;
-- `standard-benchmark-results.json` / `standard-benchmark-results.svg` — standard challenge comparison.
+- `standard-benchmark-results.json` / `standard-benchmark-results.svg` — standard challenge comparison, including explicit timeout states.
 
 The workflow also uploads all four as run artifacts. Generated benchmark output never writes directly to `main`.
 
