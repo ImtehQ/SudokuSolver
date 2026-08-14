@@ -77,15 +77,17 @@ Exact enumeration can become expensive for extremely underconstrained grids with
 
 ## Automatic benchmark results
 
-The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves four fixed, uniquely solvable profiles: Easy, Medium, Hard, and Impossible. It records exact completion counts, solve steps, and wall-clock timings, then updates only the generated section below through its own pull request.
+The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves four fixed, uniquely solvable profiles: Easy, Medium, Hard, and Impossible. It records exact completion counts, solve steps, and wall-clock timings. The difficulty names are fixed project benchmark profiles rather than a universal Sudoku rating standard.
 
-<!-- benchmark-results:start -->
-Benchmark results will be populated automatically by the next successful benchmark run on `main`.
-<!-- benchmark-results:end -->
+The workflow publishes the latest results to a dedicated `benchmark-results` branch, so the README can display current measurements without allowing an automated workflow to write directly to `main` or create pull requests.
+
+![Latest automatic Sudoku benchmark results](https://raw.githubusercontent.com/ImtehQ/SudokuSolver/benchmark-results/benchmark-results.svg)
+
+The same run also publishes machine-readable results at `benchmark-results.json` on the `benchmark-results` branch and uploads both files as workflow artifacts.
 
 ## Downloads
 
-Release-producing changes that reach `main` are published automatically using the version in [`VERSION`](VERSION). README-only benchmark-result updates do not create duplicate software releases. The GitHub Release contains standalone binaries for:
+Release-producing changes that reach `main` are published automatically using the version in [`VERSION`](VERSION). README-only changes do not create duplicate software releases. The GitHub Release contains standalone binaries for:
 
 - Windows x86-64 and ARM64
 - macOS x86-64 and Apple Silicon
