@@ -8,7 +8,7 @@ project:
 distribution:
   environment: GitHub Releases
   workflow: .github/workflows/release.yml
-  trigger: push to main
+  trigger: non-README push to main
   version_file: VERSION
   platforms:
     - linux/amd64
@@ -22,9 +22,23 @@ ci:
   workflow: .github/workflows/ci.yml
   commands:
     - gofmt check
+    - python3 -m unittest scripts.update_benchmark_readme_test
     - go vet ./...
     - go test ./...
     - go build ./cmd/sudokusolver
+
+benchmarks:
+  workflow: .github/workflows/benchmarks.yml
+  fixtures: benchmarks/puzzles.json
+  profiles:
+    - Easy
+    - Medium
+    - Hard
+    - Impossible
+  output:
+    - README generated benchmark section
+    - benchmark-results.json workflow artifact
+  publication: README-only generated pull request, squash-merged after successful benchmark validation
 
 persistence:
   database: none
@@ -37,3 +51,4 @@ setup:
   notes:
     - Branch protection details are not readable by the connected GitHub integration; actual PR merge requirements must be observed on GitHub.
     - There is no server-side production environment or mutable production data in this project.
+    - README-only automated benchmark updates are excluded from software release triggers.
