@@ -26,18 +26,32 @@ class StandardBenchmarkTests(unittest.TestCase):
         self.assertEqual(standard.format_rate(321), "321/s")
         self.assertEqual(standard.format_rate(4.25), "4.25/s")
 
-    def test_render_svg_contains_rates_and_commit(self):
-        row = {
-            "dataset": "Fixture",
-            "our_exact": {"puzzles": 10, "puzzles_per_second": 100.0},
-            "tdoku_unique": {"puzzles": 10, "puzzles_per_second": 500.0},
-            "our_probability_solve": {"puzzles": 5, "puzzles_per_second": 20.0},
-        }
-        svg = standard.render_svg([row], "1234567890abcdef")
+    def test_timeout_result_is_renderable(self):
+        timed_out = standard.timeout_result(49158, 300, 300.1)
+        self.assertEqual(standard.metric_text(timed_out), ">300s timeout")
+        self.assertEqual(standard.speedup_text(timed_out, {"puzzles_per_second": 1000.0}), "—")
+
+    def test_render_svg_contains_rates_timeout_and_commit(self):
+        rows = [
+            {
+                "dataset": "Fixture",
+                "our_exact": {"puzzles": 10, "puzzles_per_second": 100.0, "timed_out": False},
+                "tdoku_unique": {"puzzles": 10, "puzzles_per_second": 500.0, "timed_out": False},
+                "our_probability_solve": {"puzzles": 5, "puzzles_per_second": 20.0, "timed_out": False},
+            },
+            {
+                "dataset": "Full corpus",
+                "our_exact": standard.timeout_result(49158, 300, 300.0),
+                "tdoku_unique": {"puzzles": 49158, "puzzles_per_second": 1000.0, "timed_out": False},
+                "our_probability_solve": None,
+            },
+        ]
+        svg = standard.render_svg(rows, "1234567890abcdef")
         self.assertIn("1234567890ab", svg)
         self.assertIn("5.0x", svg)
         self.assertIn("100/s", svg)
         self.assertIn("500/s", svg)
+        self.assertIn("&gt;300s timeout", svg)
 
 
 if __name__ == "__main__":
