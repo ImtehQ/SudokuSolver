@@ -26,10 +26,10 @@ jobs:
             exit 1
           fi
       - name: Test benchmark tooling
-        run: python3 -m unittest scripts.update_benchmark_readme_test
+        run: python3 -m unittest scripts.update_benchmark_readme_test scripts.run_standard_benchmarks_test
       - name: Vet
         run: go vet ./...
       - name: Test
         run: go test ./...
       - name: Build
-        run: go build ./cmd/sudokusolver
+        run: go build ./cmd/...

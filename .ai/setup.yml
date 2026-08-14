@@ -22,23 +22,33 @@ ci:
   workflow: .github/workflows/ci.yml
   commands:
     - gofmt check
-    - python3 -m unittest scripts.update_benchmark_readme_test
+    - python3 -m unittest scripts.update_benchmark_readme_test scripts.run_standard_benchmarks_test
     - go vet ./...
     - go test ./...
-    - go build ./cmd/sudokusolver
+    - go build ./cmd/...
 
 benchmarks:
   workflow: .github/workflows/benchmarks.yml
-  fixtures: benchmarks/puzzles.json
-  profiles:
+  quick_fixtures: benchmarks/puzzles.json
+  quick_profiles:
     - Easy
     - Medium
     - Hard
     - Impossible
+  standard:
+    norvig_top95: benchmarks/norvig_top95.txt
+    tdoku_commit: af426180dc53aef89b82868e7b3fdfcf42165654
+    tdoku_data_blob: 2ae6e4f8d021d2198069814c7db18bf11fcd9591
+    min17_count: 49158
+    sample_size: 1000
+    sample_seed: 20260814
+    same_runner_comparison: true
   output:
-    - benchmark-results.svg embedded by README
-    - benchmark-results.json machine-readable output
-    - workflow artifact containing both files
+    - benchmark-results.svg
+    - benchmark-results.json
+    - standard-benchmark-results.svg
+    - standard-benchmark-results.json
+    - workflow artifact containing all result files
   publication: dedicated benchmark-results branch updated by GitHub Actions; never direct main writes
 
 persistence:
@@ -53,3 +63,4 @@ setup:
     - Branch protection details are not readable by the connected GitHub integration; actual PR merge requirements must be observed on GitHub.
     - There is no server-side production environment or mutable production data in this project.
     - README-only changes and generated benchmark-results branch updates are excluded from software release triggers.
+    - Standard benchmark corpus and Tdoku revision are pinned; changes to those definitions require an explicit development PR.

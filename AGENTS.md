@@ -31,6 +31,7 @@ There is currently no production database, upload store, persistent volume, or s
 - **Language/runtime:** Go 1.23+
 - **Package manager:** Go modules
 - **CLI entry point:** `cmd/sudokusolver`
+- **Batch benchmark entry point:** `cmd/sudokubench`
 - **Core analysis package:** `internal/sudoku`
 - **Database:** none
 - **Authentication:** none
@@ -54,10 +55,10 @@ Validation:
 
 ```bash
 test -z "$(gofmt -l .)"
-python3 -m unittest scripts.update_benchmark_readme_test
+python3 -m unittest scripts.update_benchmark_readme_test scripts.run_standard_benchmarks_test
 go vet ./...
 go test ./...
-go build ./cmd/sudokusolver
+go build ./cmd/...
 ```
 
 There are no database migration or external-service integration commands because the application has no external services or database.
@@ -77,20 +78,38 @@ PRs target `main`. Prefer squash merge when repository requirements allow it. Pr
 ## CI
 
 - `.github/workflows/ci.yml` runs on pull requests and pushes to `main`.
-- It checks `gofmt`, benchmark-tooling unit tests, `go vet`, `go test`, and `go build`.
+- It checks `gofmt`, benchmark-tooling unit tests, `go vet`, `go test`, and builds all commands under `cmd/`.
 - Do not claim CI succeeded until the workflow reaches a successful conclusion.
 
 ## Automatic Sudoku Benchmarks
 
 - `.github/workflows/benchmarks.yml` runs after non-README pushes to `main` and can also be dispatched manually.
-- Fixed fixtures live in `benchmarks/puzzles.json` and are named Easy, Medium, Hard, and Impossible. These are project benchmark profiles, not a universal difficulty standard.
-- `benchmarks/fixtures_test.go` requires every benchmark puzzle to be valid, uniquely solvable, and solvable using guaranteed probability-guided steps.
-- The benchmark workflow runs the normal project validation, builds the CLI once, then performs exact analysis and a full `--solve` for all four fixtures.
-- Each solver invocation has a timeout so an unexpectedly expensive benchmark fails visibly instead of running without a bound.
-- Detailed JSON and a README-display SVG are uploaded as workflow artifacts.
-- The latest JSON/SVG are also committed to the dedicated `benchmark-results` branch. This generated-output branch may be updated by the workflow, but the workflow must never write benchmark results directly to `main`.
-- README embeds `benchmark-results.svg` from that dedicated branch, so results update without automated pull-request permissions.
+- Fixed quick fixtures live in `benchmarks/puzzles.json` and are named Easy, Medium, Hard, and Impossible. These are project benchmark profiles, not a universal difficulty standard.
+- `benchmarks/fixtures_test.go` requires every quick benchmark puzzle to be valid, uniquely solvable, and solvable using guaranteed probability-guided steps.
+- The workflow runs normal project validation and builds both `cmd/sudokusolver` and the in-process `cmd/sudokubench` batch runner.
+- Quick benchmark output is `benchmark-results.json` and `benchmark-results.svg`.
+- Standard comparison output is `standard-benchmark-results.json` and `standard-benchmark-results.svg`.
+- All four result files are uploaded as workflow artifacts and published to the dedicated `benchmark-results` branch. The workflow must never write benchmark results directly to `main`.
+- README embeds both SVGs from the generated-results branch.
 - Benchmark-result branch updates must not trigger a software release or recursive benchmark run.
+
+### Standard comparison corpus
+
+The standard benchmark is deliberately reproducible and must not silently drift:
+
+- **Norvig Top95:** exactly 95 puzzles committed at `benchmarks/norvig_top95.txt` from Peter Norvig's canonical Top95 set.
+- **Tdoku 17-clue:** exactly 49,158 puzzles from Tdoku's benchmark archive. Exact-count/uniqueness throughput uses the full corpus; probability-guided full solving uses a deterministic 1,000-puzzle sample.
+- **Forum hardest 1905 11+:** deterministic 1,000-puzzle sample from Tdoku's benchmark archive.
+- **Sample seed:** `20260814`.
+- **Pinned Tdoku commit:** `af426180dc53aef89b82868e7b3fdfcf42165654`.
+- **Pinned Tdoku `data.zip` Git blob:** `2ae6e4f8d021d2198069814c7db18bf11fcd9591`.
+
+The workflow verifies both the Tdoku commit and archive blob before benchmarking. Changing the Tdoku revision, corpus, sample seed, or sample size is a benchmark-definition change and requires an explicit development PR with updated documentation.
+
+The same-runner comparison has two separate metrics and they must not be conflated:
+
+1. SudokuSolver exact completion counting vs pinned Tdoku searching up to two solutions to prove uniqueness on known-unique corpora.
+2. SudokuSolver probability-guided full solving, which performs additional exact candidate-distribution work at every step and is not equivalent to an ordinary fastest-solution benchmark.
 
 ## Releases / Deployment
 
@@ -112,7 +131,7 @@ A deployment is verified only after the Release workflow succeeds and the GitHub
 - **Persistent application state:** none
 - **Release artifacts:** persistent distribution artifacts; do not delete routinely
 - **Source history:** Git/GitHub history is persistent project history
-- **Benchmark results:** generated data on the `benchmark-results` branch; safe to regenerate from committed fixtures and source
+- **Benchmark results:** generated data on the `benchmark-results` branch; safe to regenerate from pinned corpus definitions and source
 
 No application-data backup or restore mechanism is required because the CLI stores no production data. Do not describe source control as a tested disaster-recovery backup for user data.
 
@@ -127,6 +146,7 @@ Take special care with:
 - GitHub Actions permissions;
 - release credentials/tokens;
 - benchmark workflow write access to the dedicated results branch;
+- benchmark supply-chain inputs and pinned external revisions;
 - parsing untrusted puzzle/file input;
 - future network or update-check functionality if introduced.
 
@@ -140,6 +160,6 @@ For an applicable development request:
 inspect -> branch -> implement -> test -> validate -> commit -> push -> PR -> CI -> merge -> release -> release verification
 ```
 
-For changes affecting the solver or benchmark automation, also verify the post-merge benchmark workflow reaches a final result, the `benchmark-results` branch contains results for the intended source commit, and the README references the live results asset.
+For changes affecting the solver or benchmark automation, also verify the post-merge benchmark workflow reaches a final result, the `benchmark-results` branch contains results for the intended source commit, and the README references the live result assets.
 
 If permissions, mandatory review, Actions policy, or another external gate blocks a stage, stop at that exact stage and report what completed, what is blocked, production impact, next action, and whether a human must act.

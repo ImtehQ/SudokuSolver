@@ -77,13 +77,35 @@ Exact enumeration can become expensive for extremely underconstrained grids with
 
 ## Automatic benchmark results
 
-The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves four fixed, uniquely solvable profiles: Easy, Medium, Hard, and Impossible. It records exact completion counts, solve steps, and wall-clock timings. The difficulty names are fixed project benchmark profiles rather than a universal Sudoku rating standard.
-
-The workflow publishes the latest results to a dedicated `benchmark-results` branch, so the README can display current measurements without allowing an automated workflow to write directly to `main` or create pull requests.
+The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves four fixed, uniquely solvable project profiles: Easy, Medium, Hard, and Impossible. It records exact completion counts, solve steps, and wall-clock timings. These names are fixed project benchmark profiles rather than a universal Sudoku difficulty standard.
 
 ![Latest automatic Sudoku benchmark results](https://raw.githubusercontent.com/ImtehQ/SudokuSolver/benchmark-results/benchmark-results.svg)
 
-The same run also publishes machine-readable results at `benchmark-results.json` on the `benchmark-results` branch and uploads both files as workflow artifacts.
+### Standard challenge comparison
+
+The same Action also runs a reproducible comparison against public solver-challenge corpora:
+
+- **Norvig Top95:** all 95 canonical hard puzzles, pinned in [`benchmarks/norvig_top95.txt`](benchmarks/norvig_top95.txt).
+- **Tdoku 17-clue corpus:** all 49,158 puzzles for exact uniqueness throughput, plus a deterministic 1,000-puzzle sample for probability-guided full solving.
+- **Enjoy Sudoku forum hardest 1905 11+:** a deterministic 1,000-puzzle sample for both uniqueness throughput and probability-guided full solving.
+
+For a fair machine-level comparison, the workflow builds **Tdoku at pinned commit `af426180dc53aef89b82868e7b3fdfcf42165654` on the same GitHub-hosted Ubuntu runner**. The Tdoku data archive is verified against Git blob `2ae6e4f8d021d2198069814c7db18bf11fcd9591` before the corpora are used. The deterministic sample seed is `20260814`.
+
+![Latest standard Sudoku benchmark comparison](https://raw.githubusercontent.com/ImtehQ/SudokuSolver/benchmark-results/standard-benchmark-results.svg)
+
+The comparison shows two deliberately separate measurements:
+
+1. **Uniqueness proof throughput.** SudokuSolver counts the exact completion space; pinned Tdoku searches with a limit of two solutions. On these known-unique corpora, both must establish that no second completion exists, although their internal algorithms and amount of bookkeeping differ.
+2. **SudokuSolver probability solve throughput.** This is additional work specific to this project: repeatedly calculate exact candidate distributions, choose the largest remaining branch, and continue to completion. It should not be interpreted as a like-for-like ordinary solver speed measurement.
+
+The latest generated files live on the dedicated `benchmark-results` branch:
+
+- `benchmark-results.json` / `benchmark-results.svg` — four project profiles;
+- `standard-benchmark-results.json` / `standard-benchmark-results.svg` — standard challenge comparison.
+
+The workflow also uploads all four as run artifacts. Generated benchmark output never writes directly to `main`.
+
+Benchmark corpus sources: [Peter Norvig's Top95](https://www.norvig.com/top95.txt) and the [Tdoku benchmark suite](https://github.com/t-dillon/tdoku).
 
 ## Downloads
 
@@ -102,13 +124,13 @@ Requirements: Go 1.23 or newer.
 ```bash
 go test ./...
 go vet ./...
-go build ./cmd/sudokusolver
+go build ./cmd/...
 ```
 
 Benchmark tooling tests run with:
 
 ```bash
-python3 -m unittest scripts.update_benchmark_readme_test
+python3 -m unittest scripts.update_benchmark_readme_test scripts.run_standard_benchmarks_test
 ```
 
 Formatting is checked with:
