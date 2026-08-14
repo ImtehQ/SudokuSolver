@@ -1,0 +1,97 @@
+name: Sudoku Benchmarks
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - README.md
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: benchmark-readme
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Validate project
+        run: |
+          files="$(gofmt -l .)"
+          if [ -n "$files" ]; then
+            echo "The following files need gofmt:"
+            echo "$files"
+            exit 1
+          fi
+          python3 -m unittest scripts.update_benchmark_readme_test
+          go vet ./...
+          go test ./...
+      - name: Build benchmark binary
+        run: |
+          mkdir -p .benchmark
+          go build -trimpath -o .benchmark/sudokusolver ./cmd/sudokusolver
+      - name: Run four Sudoku benchmarks
+        run: |
+          python3 scripts/update_benchmark_readme.py \
+            --binary .benchmark/sudokusolver \
+            --results-json benchmark-results.json \
+            --timeout 300
+      - name: Upload detailed benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: sudoku-benchmark-results
+          path: benchmark-results.json
+          if-no-files-found: error
+      - name: Publish README results through a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- README.md; then
+            echo "README benchmark results are already current."
+            exit 0
+          fi
+
+          branch="automation/benchmark-results-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add README.md
+          git commit -m "Update Sudoku benchmark results"
+          git push origin "$branch"
+
+          pr_url="$(gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "Update Sudoku benchmark results" \
+            --body "Automated README update from the Sudoku Benchmarks workflow for commit ${GITHUB_SHA}. The workflow validated the project and exactly solved the easy, medium, hard, and impossible benchmark fixtures before opening this PR.")"
+          echo "Created $pr_url"
+
+          for attempt in {1..12}; do
+            mergeable="$(gh pr view "$pr_url" --json mergeable --jq .mergeable)"
+            if [ "$mergeable" = "MERGEABLE" ]; then
+              gh pr merge --squash --delete-branch "$pr_url"
+              exit 0
+            fi
+            if [ "$mergeable" = "CONFLICTING" ]; then
+              echo "Benchmark results PR has a merge conflict."
+              exit 1
+            fi
+            sleep 5
+          done
+
+          echo "Benchmark results PR did not become mergeable in time."
+          exit 1
