@@ -9,7 +9,7 @@
 <rect class="bg" width="1040" height="324" rx="8"/>
 <text class="title" x="28" y="36">SudokuSolver automatic benchmarks</text>
 <text class="meta" x="28" y="62">Exact analysis + probability-guided full solve on a GitHub-hosted Ubuntu runner</text>
-<text class="meta" x="28" y="84">Source commit: 9cbbb481561b · timings vary between runners</text>
+<text class="meta" x="28" y="84">Source commit: 4e64eb7bba9d · timings vary between runners</text>
 <line class="line" x1="28" y1="106" x2="1012" y2="106"/>
 <text class="head" x="28" y="132">Difficulty</text>
 <text class="head" x="210" y="132">Givens</text>
@@ -30,7 +30,7 @@
 <text class="cell" x="28" y="192">Medium</text>
 <text class="cell" x="210" y="192">30</text>
 <text class="cell" x="330" y="192">1</text>
-<text class="cell" x="490" y="192">2 ms</text>
+<text class="cell" x="490" y="192">1 ms</text>
 <text class="cell" x="625" y="192">51</text>
 <text class="cell" x="770" y="192">2 ms</text>
 <text class="cell" x="915" y="192">Solved</text>
@@ -48,7 +48,7 @@
 <text class="cell" x="330" y="260">1</text>
 <text class="cell" x="490" y="260">5 ms</text>
 <text class="cell" x="625" y="260">60</text>
-<text class="cell" x="770" y="260">4 ms</text>
+<text class="cell" x="770" y="260">5 ms</text>
 <text class="cell" x="915" y="260">Solved</text>
 <line class="line" x1="28" y1="272" x2="1012" y2="272"/>
 </svg>
