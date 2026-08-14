@@ -1,0 +1,39 @@
+project:
+  name: SudokuSolver
+  repository: ImtehQ/SudokuSolver
+  production_branch: main
+  type: command-line application
+  language: Go 1.23
+
+distribution:
+  environment: GitHub Releases
+  workflow: .github/workflows/release.yml
+  trigger: push to main
+  version_file: VERSION
+  platforms:
+    - linux/amd64
+    - linux/arm64
+    - darwin/amd64
+    - darwin/arm64
+    - windows/amd64
+    - windows/arm64
+
+ci:
+  workflow: .github/workflows/ci.yml
+  commands:
+    - gofmt check
+    - go vet ./...
+    - go test ./...
+    - go build ./cmd/sudokusolver
+
+persistence:
+  database: none
+  uploads: none
+  application_state: none
+
+setup:
+  status: READY
+  validated_date: 2026-08-14
+  notes:
+    - Branch protection details are not readable by the connected GitHub integration; actual PR merge requirements must be observed on GitHub.
+    - There is no server-side production environment or mutable production data in this project.
