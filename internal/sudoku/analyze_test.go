@@ -2,6 +2,7 @@ package sudoku
 
 import (
 	"math/big"
+	"math/bits"
 	"testing"
 )
 
@@ -140,6 +141,28 @@ func TestSearchStateCandidateMaskMatchesGridCandidateMask(t *testing.T) {
 		if value == 0 && state.candidateMask(cell) != candidateMask(grid, cell) {
 			t.Fatalf("candidate mask mismatch after placement at cell %d", cell)
 		}
+	}
+}
+
+func TestPropagateStateSinglesFindsHiddenSingles(t *testing.T) {
+	grid, err := Parse("504670010002005040108042507809060423426803701703004000061530080087000635005200170")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := newSearchState(grid)
+	for idx, digit := range state.grid {
+		if digit != 0 {
+			continue
+		}
+		if count := bits.OnesCount16(state.candidateMask(idx)); count < 2 {
+			t.Fatalf("fixture unexpectedly contains a naked single at cell %d", idx)
+		}
+	}
+	if !propagateStateSingles(&state) {
+		t.Fatal("hidden-single fixture should remain viable")
+	}
+	if state.grid[10] != 7 {
+		t.Fatalf("r2c2 = %d, want hidden single 7", state.grid[10])
 	}
 }
 
