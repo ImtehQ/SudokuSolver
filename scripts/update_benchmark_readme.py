@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+import html
 import json
 import os
 import subprocess
 import time
 from pathlib import Path
-
-START_MARKER = "<!-- benchmark-results:start -->"
-END_MARKER = "<!-- benchmark-results:end -->"
 
 
 def format_duration(seconds: float) -> str:
@@ -86,51 +84,66 @@ def benchmark_fixture(binary: Path, fixture: dict[str, str], timeout: int) -> di
     }
 
 
-def render_results(results: list[dict], commit_sha: str) -> str:
+def render_svg(results: list[dict], commit_sha: str) -> str:
     short_sha = commit_sha[:12] if commit_sha else "local"
-    lines = [
-        "These results are generated automatically by the `Sudoku Benchmarks` GitHub Action.",
-        "Each fixture must have exactly one valid completion, and every solve step must therefore be a guaranteed 100% choice.",
-        "The difficulty names are fixed benchmark profiles, not a universal Sudoku rating standard.",
-        "Timings come from a GitHub-hosted Ubuntu runner and will vary between runs.",
-        "",
-        f"Benchmark source commit: `{short_sha}`",
-        "",
-        "| Difficulty | Givens | Exact completions | Analysis time | Solve steps | Full solve time | Result |",
-        "|---|---:|---:|---:|---:|---:|---|",
+    columns = [
+        (28, "Difficulty"),
+        (210, "Givens"),
+        (330, "Completions"),
+        (490, "Analysis"),
+        (625, "Solve steps"),
+        (770, "Full solve"),
+        (915, "Result"),
     ]
-    for result in results:
-        lines.append(
-            "| {difficulty} | {givens} | {remaining_solutions} | {analysis_time} | "
-            "{solve_steps} | {solve_time} | ✅ solved |".format(
-                difficulty=result["difficulty"],
-                givens=result["givens"],
-                remaining_solutions=result["remaining_solutions"],
-                analysis_time=format_duration(result["analysis_seconds"]),
-                solve_steps=result["solve_steps"],
-                solve_time=format_duration(result["solve_seconds"]),
-            )
-        )
-    return "\n".join(lines)
+    row_y = 158
+    row_height = 34
+    height = row_y + row_height * len(results) + 30
 
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="{height}" viewBox="0 0 1040 {height}" role="img" aria-label="Latest SudokuSolver benchmark results">',
+        "<style>",
+        ".bg{fill:#ffffff}.title{font:700 22px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;fill:#1f2328}",
+        ".meta{font:13px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;fill:#57606a}",
+        ".head{font:600 13px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;fill:#1f2328}",
+        ".cell{font:13px ui-monospace,SFMono-Regular,Consolas,monospace;fill:#1f2328}",
+        ".line{stroke:#d0d7de;stroke-width:1}",
+        "</style>",
+        f'<rect class="bg" width="1040" height="{height}" rx="8"/>',
+        '<text class="title" x="28" y="36">SudokuSolver automatic benchmarks</text>',
+        '<text class="meta" x="28" y="62">Exact analysis + probability-guided full solve on a GitHub-hosted Ubuntu runner</text>',
+        f'<text class="meta" x="28" y="84">Source commit: {html.escape(short_sha)} · timings vary between runners</text>',
+        '<line class="line" x1="28" y1="106" x2="1012" y2="106"/>',
+    ]
 
-def replace_results_section(readme: str, rendered: str) -> str:
-    start = readme.find(START_MARKER)
-    end = readme.find(END_MARKER)
-    if start == -1 or end == -1 or end < start:
-        raise ValueError("README benchmark markers are missing or out of order")
+    for x, label in columns:
+        parts.append(f'<text class="head" x="{x}" y="132">{html.escape(label)}</text>')
+    parts.append('<line class="line" x1="28" y1="142" x2="1012" y2="142"/>')
 
-    before = readme[: start + len(START_MARKER)]
-    after = readme[end:]
-    return f"{before}\n{rendered.rstrip()}\n{after}"
+    for index, result in enumerate(results):
+        y = row_y + index * row_height
+        values = [
+            result["difficulty"],
+            str(result["givens"]),
+            str(result["remaining_solutions"]),
+            format_duration(result["analysis_seconds"]),
+            str(result["solve_steps"]),
+            format_duration(result["solve_seconds"]),
+            "Solved",
+        ]
+        for (x, _), value in zip(columns, values):
+            parts.append(f'<text class="cell" x="{x}" y="{y}">{html.escape(value)}</text>')
+        parts.append(f'<line class="line" x1="28" y1="{y + 12}" x2="1012" y2="{y + 12}"/>')
+
+    parts.append("</svg>")
+    return "\n".join(parts) + "\n"
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run SudokuSolver benchmarks and update README results")
+    parser = argparse.ArgumentParser(description="Run SudokuSolver benchmarks and generate README-display results")
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--fixtures", type=Path, default=Path("benchmarks/puzzles.json"))
-    parser.add_argument("--readme", type=Path, default=Path("README.md"))
     parser.add_argument("--results-json", type=Path, default=Path("benchmark-results.json"))
+    parser.add_argument("--results-svg", type=Path, default=Path("benchmark-results.svg"))
     parser.add_argument("--timeout", type=int, default=300, help="timeout in seconds per solver invocation")
     args = parser.parse_args()
 
@@ -143,9 +156,7 @@ def main() -> int:
     results = [benchmark_fixture(args.binary, fixture, args.timeout) for fixture in fixtures]
 
     args.results_json.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
-    current_readme = args.readme.read_text(encoding="utf-8")
-    rendered = render_results(results, os.environ.get("GITHUB_SHA", ""))
-    args.readme.write_text(replace_results_section(current_readme, rendered), encoding="utf-8")
+    args.results_svg.write_text(render_svg(results, os.environ.get("GITHUB_SHA", "")), encoding="utf-8")
     return 0
 
 
