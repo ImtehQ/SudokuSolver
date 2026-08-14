@@ -75,9 +75,17 @@ Solution counts use arbitrary-precision integers, so the reported count does not
 
 Exact enumeration can become expensive for extremely underconstrained grids with very large solution spaces. The intended input is a normal Sudoku puzzle or a partially completed Sudoku of ordinary difficulty.
 
+## Automatic benchmark results
+
+The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves four fixed, uniquely solvable profiles: Easy, Medium, Hard, and Impossible. It records exact completion counts, solve steps, and wall-clock timings, then updates only the generated section below through its own pull request.
+
+<!-- benchmark-results:start -->
+Benchmark results will be populated automatically by the next successful benchmark run on `main`.
+<!-- benchmark-results:end -->
+
 ## Downloads
 
-Each accepted change to `main` is released automatically using the version in [`VERSION`](VERSION). The GitHub Release contains standalone binaries for:
+Release-producing changes that reach `main` are published automatically using the version in [`VERSION`](VERSION). README-only benchmark-result updates do not create duplicate software releases. The GitHub Release contains standalone binaries for:
 
 - Windows x86-64 and ARM64
 - macOS x86-64 and Apple Silicon
@@ -93,6 +101,12 @@ Requirements: Go 1.23 or newer.
 go test ./...
 go vet ./...
 go build ./cmd/sudokusolver
+```
+
+Benchmark tooling tests run with:
+
+```bash
+python3 -m unittest scripts.update_benchmark_readme_test
 ```
 
 Formatting is checked with:
