@@ -78,18 +78,25 @@ func SolveByProbability(grid Grid) (SolveResult, error) {
 	if err := Validate(grid); err != nil {
 		return SolveResult{}, err
 	}
+
+	summary, _ := summarize(grid)
 	counter := newProbabilityCounter()
-	initial, err := analyzeWithCounter(grid, counter)
-	if err != nil {
-		return SolveResult{}, err
-	}
+	total := counter.count(grid)
 	result := SolveResult{
-		InitialSolutions: initial.RemainingSolutions,
-		Steps:            make([]SolveStep, 0, initial.EmptyCells),
+		InitialSolutions: total.String(),
+		Steps:            make([]SolveStep, 0, summary.EmptyCells),
 	}
-	if initial.RemainingSolutions == "0" {
+	if total.Sign() == 0 {
 		return result, nil
 	}
+
+	// Once exact counting proves uniqueness, every correct remaining digit has
+	// probability 100%. Build that exact trace from the single completion instead
+	// of recounting the same one-solution space for every candidate at every step.
+	if total.BitLen() == 1 {
+		return solveKnownUniqueByProbability(grid, summary.EmptyCells)
+	}
+
 	current := grid
 	for step := 1; ; step++ {
 		analysis, err := analyzeWithCounter(current, counter)
