@@ -80,7 +80,8 @@ func SolveByProbability(grid Grid) (SolveResult, error) {
 	}
 
 	summary, _ := summarize(grid)
-	counter := newProbabilityCounter()
+	counter := acquireProbabilityCounter()
+	defer releaseProbabilityCounter(counter)
 	total := counter.count(grid)
 	result := SolveResult{
 		InitialSolutions: total.String(),
