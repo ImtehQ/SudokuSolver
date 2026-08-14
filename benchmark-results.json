@@ -3,9 +3,9 @@
     "difficulty": "Easy",
     "givens": 47,
     "remaining_solutions": "1",
-    "analysis_seconds": 0.0017676800000003823,
+    "analysis_seconds": 0.0016499339999995755,
     "solve_steps": 34,
-    "solve_seconds": 0.0023262289999976815,
+    "solve_seconds": 0.0024729370000073914,
     "solved": true,
     "final_grid": "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
   },
@@ -13,9 +13,9 @@
     "difficulty": "Medium",
     "givens": 30,
     "remaining_solutions": "1",
-    "analysis_seconds": 0.001295335999998315,
+    "analysis_seconds": 0.0013140659999919535,
     "solve_steps": 51,
-    "solve_seconds": 0.003432785000001104,
+    "solve_seconds": 0.0028698170000041046,
     "solved": true,
     "final_grid": "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
   },
@@ -23,9 +23,9 @@
     "difficulty": "Hard",
     "givens": 28,
     "remaining_solutions": "1",
-    "analysis_seconds": 0.0019070439999993027,
+    "analysis_seconds": 0.0013050029999988055,
     "solve_steps": 53,
-    "solve_seconds": 0.006347503000000643,
+    "solve_seconds": 0.0030091670000018667,
     "solved": true,
     "final_grid": "462831957795426183381795426173984265659312748248567319926178534834259671517643892"
   },
@@ -33,9 +33,9 @@
     "difficulty": "Impossible",
     "givens": 21,
     "remaining_solutions": "1",
-    "analysis_seconds": 0.19194621300000136,
+    "analysis_seconds": 0.0222676740000054,
     "solve_steps": 60,
-    "solve_seconds": 0.214771362999997,
+    "solve_seconds": 0.029939498000004505,
     "solved": true,
     "final_grid": "812753649943682175675491283154237896369845721287169534521974368438526917796318452"
   }
