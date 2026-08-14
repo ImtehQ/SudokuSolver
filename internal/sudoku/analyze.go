@@ -459,21 +459,7 @@ func (counter *exactCounter) countState(state searchState) *big.Int {
 		counter.memo[start] = new(big.Int).Set(cached)
 		return new(big.Int).Set(cached)
 	}
-	bestIdx := -1
-	bestMask := uint16(0)
-	bestCount := 10
-	for idx, digit := range state.grid {
-		if digit != 0 {
-			continue
-		}
-		mask := state.candidateMask(idx)
-		count := bits.OnesCount16(mask)
-		if count < bestCount {
-			bestIdx = idx
-			bestMask = mask
-			bestCount = count
-		}
-	}
+	bestIdx, bestMask := selectBranchCell(&state)
 	if bestIdx == -1 {
 		one := big.NewInt(1)
 		counter.memo[grid] = new(big.Int).Set(one)
