@@ -80,7 +80,19 @@ Exact enumeration can become expensive for extremely underconstrained grids with
 The `Sudoku Benchmarks` GitHub Action automatically analyzes and fully solves four fixed, uniquely solvable profiles: Easy, Medium, Hard, and Impossible. It records exact completion counts, solve steps, and wall-clock timings, then updates only the generated section below through its own pull request.
 
 <!-- benchmark-results:start -->
-Benchmark results will be populated automatically by the next successful benchmark run on `main`.
+These results are generated automatically by the `Sudoku Benchmarks` GitHub Action.
+Each fixture must have exactly one valid completion, and every solve step must therefore be a guaranteed 100% choice.
+The difficulty names are fixed benchmark profiles, not a universal Sudoku rating standard.
+Timings come from a GitHub-hosted Ubuntu runner and will vary between runs.
+
+Benchmark source commit: `c66e7e4e3628`
+
+| Difficulty | Givens | Exact completions | Analysis time | Solve steps | Full solve time | Result |
+|---|---:|---:|---:|---:|---:|---|
+| Easy | 47 | 1 | 2 ms | 34 | 2 ms | ✅ solved |
+| Medium | 30 | 1 | 1 ms | 51 | 3 ms | ✅ solved |
+| Hard | 28 | 1 | 2 ms | 53 | 5 ms | ✅ solved |
+| Impossible | 21 | 1 | 163 ms | 60 | 212 ms | ✅ solved |
 <!-- benchmark-results:end -->
 
 ## Downloads
