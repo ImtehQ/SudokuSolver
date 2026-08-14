@@ -17,7 +17,7 @@ concurrency:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,20 +34,62 @@ jobs:
             echo "$files"
             exit 1
           fi
-          python3 -m unittest scripts.update_benchmark_readme_test
+          python3 -m unittest scripts.update_benchmark_readme_test scripts.run_standard_benchmarks_test
           go vet ./...
           go test ./...
-      - name: Build benchmark binary
+      - name: Build benchmark binaries
         run: |
           mkdir -p .benchmark
           go build -trimpath -o .benchmark/sudokusolver ./cmd/sudokusolver
-      - name: Run four Sudoku benchmarks
+          go build -trimpath -o .benchmark/sudokubench ./cmd/sudokubench
+      - name: Run four project benchmarks
         run: |
           python3 scripts/update_benchmark_readme.py \
             --binary .benchmark/sudokusolver \
             --results-json benchmark-results.json \
             --results-svg benchmark-results.svg \
             --timeout 300
+      - name: Prepare pinned Tdoku comparison
+        env:
+          TDOKU_COMMIT: af426180dc53aef89b82868e7b3fdfcf42165654
+          TDOKU_DATA_BLOB: 2ae6e4f8d021d2198069814c7db18bf11fcd9591
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/t-dillon/tdoku.git .benchmark/tdoku
+          git -C .benchmark/tdoku fetch --depth 1 origin "$TDOKU_COMMIT"
+          git -C .benchmark/tdoku checkout --detach "$TDOKU_COMMIT"
+          test "$(git -C .benchmark/tdoku rev-parse HEAD)" = "$TDOKU_COMMIT"
+          test "$(git -C .benchmark/tdoku hash-object data.zip)" = "$TDOKU_DATA_BLOB"
+
+          cmake -S .benchmark/tdoku -B .benchmark/tdoku/build -DARCH=native -DOPT=O3
+          cmake --build .benchmark/tdoku/build --target tdoku_static --parallel 2
+          gcc -O3 -march=native -I .benchmark/tdoku/include \
+            -c benchmarks/tdoku_adapter.c -o .benchmark/tdoku_adapter.o
+          g++ -O3 -march=native .benchmark/tdoku_adapter.o \
+            .benchmark/tdoku/build/libtdoku_static.a -o .benchmark/tdoku_unique
+
+          mkdir -p .benchmark/corpora
+          min17_entry="$(unzip -Z1 .benchmark/tdoku/data.zip | grep -E '(^|/)puzzles2_17_clue(\.[^/]*)?$' | head -n 1)"
+          forum_entry="$(unzip -Z1 .benchmark/tdoku/data.zip | grep -E '(^|/)puzzles5_forum_hardest_1905_11\+(\.[^/]*)?$' | head -n 1)"
+          test -n "$min17_entry"
+          test -n "$forum_entry"
+          unzip -p .benchmark/tdoku/data.zip "$min17_entry" > .benchmark/corpora/17-clue.txt
+          unzip -p .benchmark/tdoku/data.zip "$forum_entry" > .benchmark/corpora/forum-hardest-11-plus.txt
+          test -s .benchmark/corpora/17-clue.txt
+          test -s .benchmark/corpora/forum-hardest-11-plus.txt
+      - name: Run standard challenge comparison
+        run: |
+          python3 scripts/run_standard_benchmarks.py \
+            --our-binary .benchmark/sudokubench \
+            --tdoku-binary .benchmark/tdoku_unique \
+            --top95 benchmarks/norvig_top95.txt \
+            --min17 .benchmark/corpora/17-clue.txt \
+            --forum-hardest .benchmark/corpora/forum-hardest-11-plus.txt \
+            --sample-size 1000 \
+            --timeout 3600 \
+            --results-json standard-benchmark-results.json \
+            --results-svg standard-benchmark-results.svg
       - name: Upload detailed benchmark results
         uses: actions/upload-artifact@v4
         with:
@@ -55,8 +97,10 @@ jobs:
           path: |
             benchmark-results.json
             benchmark-results.svg
+            standard-benchmark-results.json
+            standard-benchmark-results.svg
           if-no-files-found: error
-      - name: Publish live README benchmark graphic
+      - name: Publish live README benchmark graphics
         env:
           RESULTS_BRANCH: benchmark-results
         shell: bash
@@ -74,8 +118,10 @@ jobs:
           git worktree add .benchmark-publish "$RESULTS_BRANCH"
           cp benchmark-results.svg .benchmark-publish/benchmark-results.svg
           cp benchmark-results.json .benchmark-publish/benchmark-results.json
+          cp standard-benchmark-results.svg .benchmark-publish/standard-benchmark-results.svg
+          cp standard-benchmark-results.json .benchmark-publish/standard-benchmark-results.json
           cd .benchmark-publish
-          git add benchmark-results.svg benchmark-results.json
+          git add benchmark-results.svg benchmark-results.json standard-benchmark-results.svg standard-benchmark-results.json
 
           if git diff --cached --quiet; then
             echo "Published benchmark results are already current."
