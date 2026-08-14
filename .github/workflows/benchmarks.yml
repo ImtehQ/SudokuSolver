@@ -17,7 +17,7 @@ concurrency:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -87,7 +87,7 @@ jobs:
             --min17 .benchmark/corpora/17-clue.txt \
             --forum-hardest .benchmark/corpora/forum-hardest-11-plus.txt \
             --sample-size 1000 \
-            --timeout 3600 \
+            --timeout 300 \
             --results-json standard-benchmark-results.json \
             --results-svg standard-benchmark-results.svg
       - name: Upload detailed benchmark results
