@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/big"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -16,19 +17,24 @@ import (
 )
 
 type benchmarkResult struct {
-	Dataset            string  `json:"dataset"`
-	Mode               string  `json:"mode"`
-	Puzzles            int     `json:"puzzles"`
-	Successful         int     `json:"successful"`
-	Unique             int     `json:"unique"`
-	TotalSeconds       float64 `json:"total_seconds"`
-	PuzzlesPerSecond   float64 `json:"puzzles_per_second"`
-	MeanMilliseconds   float64 `json:"mean_milliseconds"`
-	MedianMilliseconds float64 `json:"median_milliseconds"`
-	P95Milliseconds    float64 `json:"p95_milliseconds"`
-	MaxMilliseconds    float64 `json:"max_milliseconds"`
-	TotalSteps         int     `json:"total_steps,omitempty"`
-	AverageSteps       float64 `json:"average_steps,omitempty"`
+	Dataset                 string  `json:"dataset"`
+	Mode                    string  `json:"mode"`
+	Puzzles                 int     `json:"puzzles"`
+	Successful              int     `json:"successful"`
+	Unique                  int     `json:"unique"`
+	TotalSeconds            float64 `json:"total_seconds"`
+	PuzzlesPerSecond        float64 `json:"puzzles_per_second"`
+	MeanMilliseconds        float64 `json:"mean_milliseconds"`
+	MedianMilliseconds      float64 `json:"median_milliseconds"`
+	P95Milliseconds         float64 `json:"p95_milliseconds"`
+	MaxMilliseconds         float64 `json:"max_milliseconds"`
+	AllocatedBytes          uint64  `json:"allocated_bytes"`
+	Allocations             uint64  `json:"allocations"`
+	GCCycles                uint32  `json:"gc_cycles"`
+	AllocatedBytesPerPuzzle float64 `json:"allocated_bytes_per_puzzle"`
+	AllocationsPerPuzzle    float64 `json:"allocations_per_puzzle"`
+	TotalSteps              int     `json:"total_steps,omitempty"`
+	AverageSteps            float64 `json:"average_steps,omitempty"`
 }
 
 func main() {
@@ -148,33 +154,42 @@ func normalizePuzzleLine(line string) (string, bool, error) {
 
 func benchmark(dataset, mode string, puzzles []string, requireUnique bool) (benchmarkResult, error) {
 	result := benchmarkResult{Dataset: dataset, Mode: mode, Puzzles: len(puzzles)}
-	durations := make([]time.Duration, 0, len(puzzles))
-	startedAll := time.Now()
-
+	durations := make([]time.Duration, len(puzzles))
+	grids := make([]sudoku.Grid, len(puzzles))
+	startedSetup := time.Now()
 	for index, text := range puzzles {
 		grid, err := sudoku.Parse(text)
 		if err != nil {
 			return benchmarkResult{}, fmt.Errorf("puzzle %d: parse: %w", index+1, err)
 		}
+		grids[index] = grid
+	}
+	setupDuration := time.Since(startedSetup)
 
+	var memoryBefore runtime.MemStats
+	runtime.ReadMemStats(&memoryBefore)
+	startedOperations := time.Now()
+	one := big.NewInt(1)
+
+	for index, grid := range grids {
 		started := time.Now()
 		switch mode {
 		case "count":
 			count, err := sudoku.CountSolutions(grid)
-			durations = append(durations, time.Since(started))
+			durations[index] = time.Since(started)
 			if err != nil {
 				return benchmarkResult{}, fmt.Errorf("puzzle %d: count: %w", index+1, err)
 			}
-			if count.Cmp(big.NewInt(1)) == 0 {
+			if count.Cmp(one) == 0 {
 				result.Unique++
 			}
-			if requireUnique && count.Cmp(big.NewInt(1)) != 0 {
+			if requireUnique && count.Cmp(one) != 0 {
 				return benchmarkResult{}, fmt.Errorf("puzzle %d: expected exactly one completion, got %s", index+1, count.String())
 			}
 			result.Successful++
 		case "solve":
 			solved, err := sudoku.SolveByProbability(grid)
-			durations = append(durations, time.Since(started))
+			durations[index] = time.Since(started)
 			if err != nil {
 				return benchmarkResult{}, fmt.Errorf("puzzle %d: solve: %w", index+1, err)
 			}
@@ -196,10 +211,20 @@ func benchmark(dataset, mode string, puzzles []string, requireUnique bool) (benc
 			result.Successful++
 		}
 	}
+	operationDuration := time.Since(startedOperations)
 
-	result.TotalSeconds = time.Since(startedAll).Seconds()
+	var memoryAfter runtime.MemStats
+	runtime.ReadMemStats(&memoryAfter)
+	result.AllocatedBytes = memoryAfter.TotalAlloc - memoryBefore.TotalAlloc
+	result.Allocations = memoryAfter.Mallocs - memoryBefore.Mallocs
+	result.GCCycles = memoryAfter.NumGC - memoryBefore.NumGC
+	result.TotalSeconds = (setupDuration + operationDuration).Seconds()
 	if result.TotalSeconds > 0 {
 		result.PuzzlesPerSecond = float64(result.Puzzles) / result.TotalSeconds
+	}
+	if result.Puzzles > 0 {
+		result.AllocatedBytesPerPuzzle = float64(result.AllocatedBytes) / float64(result.Puzzles)
+		result.AllocationsPerPuzzle = float64(result.Allocations) / float64(result.Puzzles)
 	}
 	fillLatencyStats(&result, durations)
 	if result.Puzzles > 0 && mode == "solve" {

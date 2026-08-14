@@ -83,7 +83,10 @@ func SolveByProbability(grid Grid) (SolveResult, error) {
 	if err != nil {
 		return SolveResult{}, err
 	}
-	result := SolveResult{InitialSolutions: initial.RemainingSolutions}
+	result := SolveResult{
+		InitialSolutions: initial.RemainingSolutions,
+		Steps:            make([]SolveStep, 0, initial.EmptyCells),
+	}
 	if initial.RemainingSolutions == "0" {
 		return result, nil
 	}
@@ -294,18 +297,18 @@ func digitsFromMask(mask uint16) []uint8 {
 	return digits
 }
 
-// searchState keeps row/column/box occupancy incrementally so recursive exact
-// counting can compute a candidate mask with bit operations instead of rescanning
-// three units for every candidate query.
+// searchState keeps row/column/box occupancy and its packed memo key
+// incrementally so recursive search work never has to rebuild them.
 type searchState struct {
 	grid    Grid
 	rowUsed [Size]uint16
 	colUsed [Size]uint16
 	boxUsed [Size]uint16
+	key     packedGrid
 }
 
 func newSearchState(grid Grid) searchState {
-	state := searchState{grid: grid}
+	state := searchState{grid: grid, key: packGrid(grid)}
 	for idx, digit := range grid {
 		if digit == 0 {
 			continue
@@ -340,6 +343,7 @@ func (state *searchState) place(idx int, digit uint8) {
 	state.rowUsed[row] |= bit
 	state.colUsed[col] |= bit
 	state.boxUsed[box] |= bit
+	state.key.set(idx, digit)
 }
 
 func propagateStateSingles(state *searchState) bool {
@@ -427,62 +431,6 @@ func propagateHiddenStateSingleInUnit(state *searchState, cells [Size]int) (bool
 		}
 	}
 	return false, true
-}
-
-type exactCounter struct {
-	memo           map[Grid]*big.Int
-	degreeTieBreak bool
-}
-
-func newExactCounter() *exactCounter {
-	return &exactCounter{memo: make(map[Grid]*big.Int), degreeTieBreak: true}
-}
-
-func newProbabilityCounter() *exactCounter {
-	return &exactCounter{memo: make(map[Grid]*big.Int)}
-}
-
-func (counter *exactCounter) count(start Grid) *big.Int {
-	if cached, ok := counter.memo[start]; ok {
-		return new(big.Int).Set(cached)
-	}
-	return counter.countState(newSearchState(start))
-}
-
-func (counter *exactCounter) countState(state searchState) *big.Int {
-	start := state.grid
-	if cached, ok := counter.memo[start]; ok {
-		return new(big.Int).Set(cached)
-	}
-	if !propagateStateSingles(&state) {
-		zero := new(big.Int)
-		counter.memo[start] = zero
-		return new(big.Int)
-	}
-	grid := state.grid
-	if cached, ok := counter.memo[grid]; ok {
-		counter.memo[start] = new(big.Int).Set(cached)
-		return new(big.Int).Set(cached)
-	}
-	bestIdx, bestMask := selectBranchCellRowMajor(&state)
-	if counter.degreeTieBreak {
-		bestIdx, bestMask = selectBranchCell(&state)
-	}
-	if bestIdx == -1 {
-		one := big.NewInt(1)
-		counter.memo[grid] = new(big.Int).Set(one)
-		counter.memo[start] = new(big.Int).Set(one)
-		return one
-	}
-	total := new(big.Int)
-	for _, digit := range digitsFromMask(bestMask) {
-		next := state
-		next.place(bestIdx, digit)
-		total.Add(total, counter.countState(next))
-	}
-	counter.memo[grid] = new(big.Int).Set(total)
-	counter.memo[start] = new(big.Int).Set(total)
-	return new(big.Int).Set(total)
 }
 
 // HasSolution checks whether at least one valid completion exists without
