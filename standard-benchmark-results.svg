@@ -9,7 +9,7 @@
 <rect class="bg" width="1280" height="354" rx="8"/>
 <text class="title" x="28" y="36">Standard Sudoku benchmark comparison</text>
 <text class="meta" x="28" y="62">Same GitHub-hosted Ubuntu runner · single-thread SudokuSolver · exact count vs pinned Tdoku limit=2</text>
-<text class="meta" x="28" y="84">SudokuSolver source: 12a26afd1458 · Tdoku: af426180dc53 · deterministic samples: seed 20260814</text>
+<text class="meta" x="28" y="84">SudokuSolver source: 9cbbb481561b · Tdoku: af426180dc53 · deterministic samples: seed 20260814</text>
 <text class="meta" x="28" y="106">Probability solve is extra work: exact candidate distributions are recomputed repeatedly to completion.</text>
 <line class="line" x1="28" y1="128" x2="1252" y2="128"/>
 <text class="head" x="28" y="154">Dataset</text>
@@ -23,25 +23,25 @@
 <text class="cell" x="28" y="180">Norvig Top95 (all 95)</text>
 <text class="cell" x="365" y="180">95</text>
 <text class="cell" x="455" y="180">2.0k/s</text>
-<text class="cell" x="650" y="180">32.4k/s</text>
-<text class="cell" x="815" y="180">16.4x</text>
-<text class="cell" x="960" y="180">278/s</text>
+<text class="cell" x="650" y="180">31.5k/s</text>
+<text class="cell" x="815" y="180">15.7x</text>
+<text class="cell" x="960" y="180">1.1k/s</text>
 <text class="cell" x="1160" y="180">95</text>
 <line class="line" x1="28" y1="194" x2="1252" y2="194"/>
 <text class="cell" x="28" y="222">Tdoku 17-clue (sample 10)</text>
 <text class="cell" x="365" y="222">10</text>
-<text class="cell" x="455" y="222">8.7k/s</text>
+<text class="cell" x="455" y="222">7.6k/s</text>
 <text class="cell" x="650" y="222">6.2k/s</text>
-<text class="cell" x="815" y="222">0.7x</text>
-<text class="cell" x="960" y="222">443/s</text>
+<text class="cell" x="815" y="222">0.8x</text>
+<text class="cell" x="960" y="222">3.7k/s</text>
 <text class="cell" x="1160" y="222">10</text>
 <line class="line" x1="28" y1="236" x2="1252" y2="236"/>
 <text class="cell" x="28" y="264">Forum hardest 11+ (sample 10)</text>
 <text class="cell" x="365" y="264">10</text>
-<text class="cell" x="455" y="264">752/s</text>
-<text class="cell" x="650" y="264">5.3k/s</text>
-<text class="cell" x="815" y="264">7.1x</text>
-<text class="cell" x="960" y="264">155/s</text>
+<text class="cell" x="455" y="264">777/s</text>
+<text class="cell" x="650" y="264">4.7k/s</text>
+<text class="cell" x="815" y="264">6.1x</text>
+<text class="cell" x="960" y="264">559/s</text>
 <text class="cell" x="1160" y="264">10</text>
 <line class="line" x1="28" y1="278" x2="1252" y2="278"/>
 </svg>
