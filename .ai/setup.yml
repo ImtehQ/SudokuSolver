@@ -36,9 +36,10 @@ benchmarks:
     - Hard
     - Impossible
   output:
-    - README generated benchmark section
-    - benchmark-results.json workflow artifact
-  publication: README-only generated pull request, squash-merged after successful benchmark validation
+    - benchmark-results.svg embedded by README
+    - benchmark-results.json machine-readable output
+    - workflow artifact containing both files
+  publication: dedicated benchmark-results branch updated by GitHub Actions; never direct main writes
 
 persistence:
   database: none
@@ -51,4 +52,4 @@ setup:
   notes:
     - Branch protection details are not readable by the connected GitHub integration; actual PR merge requirements must be observed on GitHub.
     - There is no server-side production environment or mutable production data in this project.
-    - README-only automated benchmark updates are excluded from software release triggers.
+    - README-only changes and generated benchmark-results branch updates are excluded from software release triggers.
