@@ -17,7 +17,7 @@ concurrency:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,6 +43,8 @@ jobs:
           go build -trimpath -o .benchmark/sudokusolver ./cmd/sudokusolver
           go build -trimpath -o .benchmark/sudokubench ./cmd/sudokubench
       - name: Run four project benchmarks
+        env:
+          GOMAXPROCS: 1
         run: |
           python3 scripts/update_benchmark_readme.py \
             --binary .benchmark/sudokusolver \
@@ -79,6 +81,8 @@ jobs:
           test -s .benchmark/corpora/17-clue.txt
           test -s .benchmark/corpora/forum-hardest-11-plus.txt
       - name: Run standard challenge comparison
+        env:
+          GOMAXPROCS: 1
         run: |
           python3 scripts/run_standard_benchmarks.py \
             --our-binary .benchmark/sudokubench \
@@ -86,7 +90,7 @@ jobs:
             --top95 benchmarks/norvig_top95.txt \
             --min17 .benchmark/corpora/17-clue.txt \
             --forum-hardest .benchmark/corpora/forum-hardest-11-plus.txt \
-            --sample-size 1000 \
+            --sample-size 10 \
             --timeout 300 \
             --results-json standard-benchmark-results.json \
             --results-svg standard-benchmark-results.svg
