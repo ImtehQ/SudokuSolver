@@ -17,24 +17,24 @@ import (
 )
 
 type benchmarkResult struct {
-	Dataset                   string  `json:"dataset"`
-	Mode                      string  `json:"mode"`
-	Puzzles                   int     `json:"puzzles"`
-	Successful                int     `json:"successful"`
-	Unique                    int     `json:"unique"`
-	TotalSeconds              float64 `json:"total_seconds"`
-	PuzzlesPerSecond          float64 `json:"puzzles_per_second"`
-	MeanMilliseconds          float64 `json:"mean_milliseconds"`
-	MedianMilliseconds        float64 `json:"median_milliseconds"`
-	P95Milliseconds           float64 `json:"p95_milliseconds"`
-	MaxMilliseconds           float64 `json:"max_milliseconds"`
-	AllocatedBytes            uint64  `json:"allocated_bytes"`
-	Allocations               uint64  `json:"allocations"`
-	GCCycles                  uint32  `json:"gc_cycles"`
-	AllocatedBytesPerPuzzle   float64 `json:"allocated_bytes_per_puzzle"`
-	AllocationsPerPuzzle      float64 `json:"allocations_per_puzzle"`
-	TotalSteps                int     `json:"total_steps,omitempty"`
-	AverageSteps              float64 `json:"average_steps,omitempty"`
+	Dataset                 string  `json:"dataset"`
+	Mode                    string  `json:"mode"`
+	Puzzles                 int     `json:"puzzles"`
+	Successful              int     `json:"successful"`
+	Unique                  int     `json:"unique"`
+	TotalSeconds            float64 `json:"total_seconds"`
+	PuzzlesPerSecond        float64 `json:"puzzles_per_second"`
+	MeanMilliseconds        float64 `json:"mean_milliseconds"`
+	MedianMilliseconds      float64 `json:"median_milliseconds"`
+	P95Milliseconds         float64 `json:"p95_milliseconds"`
+	MaxMilliseconds         float64 `json:"max_milliseconds"`
+	AllocatedBytes          uint64  `json:"allocated_bytes"`
+	Allocations             uint64  `json:"allocations"`
+	GCCycles                uint32  `json:"gc_cycles"`
+	AllocatedBytesPerPuzzle float64 `json:"allocated_bytes_per_puzzle"`
+	AllocationsPerPuzzle    float64 `json:"allocations_per_puzzle"`
+	TotalSteps              int     `json:"total_steps,omitempty"`
+	AverageSteps            float64 `json:"average_steps,omitempty"`
 }
 
 func main() {
