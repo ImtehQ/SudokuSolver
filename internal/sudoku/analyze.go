@@ -78,7 +78,7 @@ func SolveByProbability(grid Grid) (SolveResult, error) {
 	if err := Validate(grid); err != nil {
 		return SolveResult{}, err
 	}
-	counter := newExactCounter()
+	counter := newProbabilityCounter()
 	initial, err := analyzeWithCounter(grid, counter)
 	if err != nil {
 		return SolveResult{}, err
@@ -430,10 +430,15 @@ func propagateHiddenStateSingleInUnit(state *searchState, cells [Size]int) (bool
 }
 
 type exactCounter struct {
-	memo map[Grid]*big.Int
+	memo           map[Grid]*big.Int
+	degreeTieBreak bool
 }
 
 func newExactCounter() *exactCounter {
+	return &exactCounter{memo: make(map[Grid]*big.Int), degreeTieBreak: true}
+}
+
+func newProbabilityCounter() *exactCounter {
 	return &exactCounter{memo: make(map[Grid]*big.Int)}
 }
 
@@ -459,7 +464,10 @@ func (counter *exactCounter) countState(state searchState) *big.Int {
 		counter.memo[start] = new(big.Int).Set(cached)
 		return new(big.Int).Set(cached)
 	}
-	bestIdx, bestMask := selectBranchCell(&state)
+	bestIdx, bestMask := selectBranchCellRowMajor(&state)
+	if counter.degreeTieBreak {
+		bestIdx, bestMask = selectBranchCell(&state)
+	}
 	if bestIdx == -1 {
 		one := big.NewInt(1)
 		counter.memo[grid] = new(big.Int).Set(one)

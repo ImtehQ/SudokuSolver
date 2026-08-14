@@ -61,3 +61,22 @@ func selectBranchCell(s *searchState) (int, uint16) {
 	}
 	return bestIdx, bestMask
 }
+
+func selectBranchCellRowMajor(s *searchState) (int, uint16) {
+	bestIdx := -1
+	bestMask := uint16(0)
+	bestCount := 10
+	for idx, digit := range s.grid {
+		if digit != 0 {
+			continue
+		}
+		mask := s.candidateMask(idx)
+		count := bits.OnesCount16(mask)
+		if count < bestCount {
+			bestIdx = idx
+			bestMask = mask
+			bestCount = count
+		}
+	}
+	return bestIdx, bestMask
+}
