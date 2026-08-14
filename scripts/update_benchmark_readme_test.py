@@ -11,19 +11,28 @@ class BenchmarkReadmeTests(unittest.TestCase):
         self.assertEqual(benchmark.format_duration(0.125), "125 ms")
         self.assertEqual(benchmark.format_duration(1.23456), "1.235 s")
 
-    def test_replace_results_section(self):
-        original = (
-            "before\n"
-            f"{benchmark.START_MARKER}\n"
-            "old\n"
-            f"{benchmark.END_MARKER}\n"
-            "after\n"
+    def test_render_svg_contains_results(self):
+        svg = benchmark.render_svg(
+            [
+                {
+                    "difficulty": "Impossible",
+                    "givens": 21,
+                    "remaining_solutions": "1",
+                    "analysis_seconds": 0.163,
+                    "solve_steps": 60,
+                    "solve_seconds": 0.212,
+                    "solved": True,
+                    "final_grid": "",
+                }
+            ],
+            "abcdef1234567890",
         )
-        updated = benchmark.replace_results_section(original, "new results")
-        self.assertIn("new results", updated)
-        self.assertNotIn("\nold\n", updated)
-        self.assertTrue(updated.startswith("before\n"))
-        self.assertTrue(updated.endswith("after\n"))
+        self.assertIn("SudokuSolver automatic benchmarks", svg)
+        self.assertIn("abcdef123456", svg)
+        self.assertIn("Impossible", svg)
+        self.assertIn("163 ms", svg)
+        self.assertIn("212 ms", svg)
+        self.assertIn("Solved", svg)
 
     def test_load_fixtures_requires_expected_profiles(self):
         with tempfile.TemporaryDirectory() as temp_dir:
