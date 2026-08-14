@@ -12,7 +12,15 @@ Repository-specific instructions for AI development agents working on SudokuSolv
 
 ## Product
 
-SudokuSolver analyzes a Sudoku grid rather than simply printing a solution. Its primary score is the percentage of randomized, constraint-respecting completion trials that reach a valid full Sudoku. This is an empirical analytical score, not a mathematical probability that a deterministic puzzle is solvable. The optional `--verify` mode checks exact solution existence without returning the solved grid.
+SudokuSolver analyzes the exact Sudoku solution space rather than using randomized completion trials. For the current grid it counts every valid complete Sudoku compatible with the filled cells. For the next empty cell (row-major), it counts how many of those remaining completions contain each digit 1-9 and reports:
+
+```text
+candidate probability = completions containing candidate / all remaining completions
+```
+
+`--solve` repeatedly chooses the candidate contained in the largest share of the remaining solution space. For a uniquely solvable Sudoku every correct choice is 100% and guaranteed. On a multi-solution grid a choice below 100% is a heuristic branch and must be described as such, never as certainty.
+
+Counts are exact and use arbitrary-precision integers. Very underconstrained grids can be computationally expensive; do not replace exact counting with sampling without an explicit product decision.
 
 ## Production Safety
 

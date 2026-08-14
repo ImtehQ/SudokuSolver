@@ -67,6 +67,16 @@ func Validate(grid Grid) error {
 	return nil
 }
 
+// Compact returns the grid as 81 digits with 0 representing empty cells.
+func Compact(grid Grid) string {
+	var b strings.Builder
+	b.Grow(CellCount)
+	for _, value := range grid {
+		b.WriteByte('0' + byte(value))
+	}
+	return b.String()
+}
+
 func validateUnit(grid Grid, cells [Size]int, label string) error {
 	var seen [10]bool
 	for _, idx := range cells {

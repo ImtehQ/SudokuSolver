@@ -46,3 +46,13 @@ func TestParseRejectsWrongCellCount(t *testing.T) {
 		t.Fatal("Parse() accepted short puzzle")
 	}
 }
+
+func TestCompactRoundTrip(t *testing.T) {
+	grid, err := Parse(classicPuzzle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := Compact(grid); got != classicPuzzle {
+		t.Fatalf("Compact() = %q, want %q", got, classicPuzzle)
+	}
+}

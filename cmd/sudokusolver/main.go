@@ -26,14 +26,12 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 
 	filePath := fs.String("file", "", "read the puzzle from a file")
-	trials := fs.Int("trials", 5000, "number of randomized completion trials")
-	seed := fs.Int64("seed", 0, "random seed (0 derives a stable seed from the puzzle)")
-	verify := fs.Bool("verify", false, "exactly verify whether at least one solution exists")
+	solve := fs.Bool("solve", false, "solve by repeatedly choosing the highest exact candidate probability")
 	jsonOutput := fs.Bool("json", false, "write analysis as JSON")
 	showVersion := fs.Bool("version", false, "print version information")
 
 	fs.Usage = func() {
-		fmt.Fprintf(stderr, "SudokuSolver analyzes Sudoku constraints and estimates completion likelihood.\n\n")
+		fmt.Fprintf(stderr, "SudokuSolver counts the exact remaining Sudoku solution space and candidate probabilities.\n\n")
 		fmt.Fprintf(stderr, "Usage:\n  sudokusolver [options] <81-cell-puzzle>\n  sudokusolver [options] --file puzzle.txt\n  cat puzzle.txt | sudokusolver [options]\n\nOptions:\n")
 		fs.PrintDefaults()
 	}
@@ -44,10 +42,6 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if *showVersion {
 		fmt.Fprintf(stdout, "SudokuSolver %s (%s)\n", version, commit)
 		return 0
-	}
-	if *trials < 1 || *trials > 1_000_000 {
-		fmt.Fprintln(stderr, "error: --trials must be between 1 and 1000000")
-		return 2
 	}
 
 	input, err := readPuzzleInput(fs.Args(), *filePath, stdin)
@@ -60,40 +54,148 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "invalid puzzle: %v\n", err)
 		return 2
 	}
-	analysis, err := sudoku.Analyze(grid, *trials, *seed, *verify)
+
+	if *solve {
+		result, err := sudoku.SolveByProbability(grid)
+		if err != nil {
+			fmt.Fprintf(stderr, "solve failed: %v\n", err)
+			return 1
+		}
+		if *jsonOutput {
+			if err := writeJSON(stdout, result); err != nil {
+				fmt.Fprintf(stderr, "output failed: %v\n", err)
+				return 1
+			}
+			if !result.Solved {
+				return 1
+			}
+			return 0
+		}
+		writeSolveText(stdout, result)
+		if !result.Solved {
+			return 1
+		}
+		return 0
+	}
+
+	analysis, err := sudoku.Analyze(grid)
 	if err != nil {
 		fmt.Fprintf(stderr, "analysis failed: %v\n", err)
 		return 1
 	}
-
 	if *jsonOutput {
-		encoder := json.NewEncoder(stdout)
-		encoder.SetIndent("", "  ")
-		if err := encoder.Encode(analysis); err != nil {
+		if err := writeJSON(stdout, analysis); err != nil {
 			fmt.Fprintf(stderr, "output failed: %v\n", err)
 			return 1
 		}
 		return 0
 	}
 
-	fmt.Fprintf(stdout, "SudokuSolver analysis\n")
-	fmt.Fprintf(stdout, "Givens: %d\n", analysis.Givens)
-	fmt.Fprintf(stdout, "Empty cells: %d\n", analysis.EmptyCells)
-	fmt.Fprintf(stdout, "Forced cells now: %d\n", analysis.ForcedCells)
-	fmt.Fprintf(stdout, "Candidate range: %d-%d\n", analysis.MinCandidates, analysis.MaxCandidates)
-	fmt.Fprintf(stdout, "Average candidates: %.2f\n", analysis.AverageCandidates)
-	fmt.Fprintf(stdout, "Randomized trials: %d\n", analysis.Trials)
-	fmt.Fprintf(stdout, "Successful completions: %d\n", analysis.SuccessfulCompletions)
-	fmt.Fprintf(stdout, "Estimated solution probability: %.2f%%\n", analysis.EstimatedProbability)
-	if analysis.VerifiedSolvable != nil {
-		if *analysis.VerifiedSolvable {
-			fmt.Fprintln(stdout, "Exact solvability: yes")
-		} else {
-			fmt.Fprintln(stdout, "Exact solvability: no")
-		}
-	}
-	fmt.Fprintln(stdout, "Note: the percentage is an empirical randomized completion score, not a mathematical proof of solvability. Use --verify for an exact yes/no check.")
+	writeAnalysisText(stdout, analysis)
 	return 0
+}
+
+func writeJSON(w io.Writer, value any) error {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(value)
+}
+
+func writeAnalysisText(w io.Writer, analysis sudoku.Analysis) {
+	fmt.Fprintln(w, "SudokuSolver exact solution-space analysis")
+	fmt.Fprintf(w, "Givens: %d\n", analysis.Givens)
+	fmt.Fprintf(w, "Empty cells: %d\n", analysis.EmptyCells)
+	fmt.Fprintf(w, "Forced cells now: %d\n", analysis.ForcedCells)
+	fmt.Fprintf(w, "Candidate range: %d-%d\n", analysis.MinCandidates, analysis.MaxCandidates)
+	fmt.Fprintf(w, "Average candidates: %.2f\n", analysis.AverageCandidates)
+	fmt.Fprintf(w, "Remaining valid completions: %s\n", analysis.RemainingSolutions)
+	fmt.Fprintf(w, "Unique completion: %s\n", yesNo(analysis.UniqueSolution))
+
+	if analysis.RemainingSolutions == "0" {
+		fmt.Fprintln(w, "No valid Sudoku completion exists for the current grid.")
+		return
+	}
+	if analysis.NextCell == nil {
+		fmt.Fprintln(w, "The grid is already complete.")
+		return
+	}
+
+	cell := analysis.NextCell
+	fmt.Fprintf(w, "\nNext cell: r%dc%d\n", cell.Row, cell.Column)
+	fmt.Fprintln(w, "Candidate distribution:")
+	for _, candidate := range cell.Candidates {
+		blocked := ""
+		if !candidate.LocallyAllowed {
+			blocked = " [blocked by current row/column/box]"
+		}
+		fmt.Fprintf(w, "  %d: %s / %s (%.6f%%)%s\n",
+			candidate.Digit,
+			candidate.RemainingSolutions,
+			analysis.RemainingSolutions,
+			candidate.ProbabilityPercent,
+			blocked,
+		)
+	}
+	fmt.Fprintf(w, "Recommended digit: %d (%.6f%%; leaves %s completion(s))\n",
+		cell.RecommendedDigit,
+		cell.RecommendedProbabilityPercent,
+		cell.RecommendedRemainingSolutions,
+	)
+	if cell.Guaranteed {
+		fmt.Fprintln(w, "Recommendation status: guaranteed across every remaining completion.")
+	} else {
+		fmt.Fprintln(w, "Recommendation status: highest-probability branch, not guaranteed.")
+	}
+	if analysis.UniqueSolution {
+		fmt.Fprintln(w, "Note: this grid already has exactly one valid completion, so its correct empty digits are 100% under exact solution-space counting.")
+	}
+}
+
+func writeSolveText(w io.Writer, result sudoku.SolveResult) {
+	fmt.Fprintln(w, "SudokuSolver probability-guided solve")
+	fmt.Fprintf(w, "Initial remaining valid completions: %s\n", result.InitialSolutions)
+	if result.InitialSolutions == "0" {
+		fmt.Fprintln(w, "No valid Sudoku completion exists for the current grid.")
+		return
+	}
+
+	for _, step := range result.Steps {
+		status := "highest probability"
+		if step.Cell.Guaranteed {
+			status = "guaranteed"
+		}
+		fmt.Fprintf(w, "Step %d: r%dc%d = %d (%.6f%%, %s -> %s completion(s), %s)\n",
+			step.Step,
+			step.Cell.Row,
+			step.Cell.Column,
+			step.Cell.RecommendedDigit,
+			step.Cell.RecommendedProbabilityPercent,
+			step.RemainingSolutionsBefore,
+			step.RemainingSolutionsAfter,
+			status,
+		)
+	}
+
+	if result.Solved {
+		fmt.Fprintln(w, "\nFinal grid:")
+		writeGrid(w, result.FinalGrid)
+	} else {
+		fmt.Fprintln(w, "The grid could not be completed.")
+	}
+}
+
+func writeGrid(w io.Writer, compact string) {
+	for row := 0; row < sudoku.Size; row++ {
+		start := row * sudoku.Size
+		fmt.Fprintln(w, compact[start:start+sudoku.Size])
+	}
+}
+
+func yesNo(value bool) string {
+	if value {
+		return "yes"
+	}
+	return "no"
 }
 
 func readPuzzleInput(args []string, filePath string, stdin io.Reader) (string, error) {

@@ -1,22 +1,39 @@
 # SudokuSolver
 
-SudokuSolver is a command-line Sudoku analyzer inspired by an older private project. Instead of simply printing a solved grid, it examines the current constraints and estimates how likely a randomized, constraint-respecting completion is to reach a valid Sudoku.
+SudokuSolver is a command-line Sudoku analyzer inspired by an older private project. Instead of treating a puzzle as a yes/no solvability check or using randomized attempts, it measures the **exact remaining solution space**.
 
-The project is intentionally analytical: it reports givens, empty cells, forced cells, candidate pressure, randomized completion success, and—when requested—an exact yes/no solvability verification without revealing the solution.
+For the current grid it counts how many complete valid Sudokus are still compatible with every filled cell. For the next empty cell, it then asks the same question for each possible digit.
 
-## Important meaning of “probability”
+For a candidate digit:
 
-A fixed Sudoku position is ultimately either solvable or unsolvable, so there is no literal unknown probability once the full state is known. SudokuSolver therefore reports an **empirical solution probability**: the percentage of randomized constraint-completion trials that successfully reach a valid completed grid.
+```text
+probability = valid completions containing that digit / all remaining valid completions
+```
 
-That percentage is useful as a comparative analytical score, but it is not a mathematical proof that a solution exists. Use `--verify` when you want an exact existence check.
+If the current grid has 1,000 valid completions and placing `4` in the next cell leaves 816 of them, that candidate has an exact solution-space probability of 81.6%.
+
+## A useful uniqueness detail
+
+A standard published Sudoku is normally designed to have exactly one solution. If all of its original clues are supplied, the exact remaining solution count is therefore already `1`. In that case the correct digit for every empty cell is 100% and every other digit is 0%.
+
+The probability distribution becomes more varied on grids that still admit multiple completions. SudokuSolver still supports those grids: it shows how the remaining completions split between candidates and marks whether the recommended digit is guaranteed or merely the largest branch.
 
 ## Usage
 
-Provide an 81-cell puzzle using digits `1-9` for givens and `0` or `.` for blanks:
+Provide an 81-cell puzzle using digits `1-9` for filled cells and `0` or `.` for blanks:
 
 ```bash
 sudokusolver "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
 ```
+
+The default analysis reports:
+
+- current givens and empty cells;
+- local candidate pressure;
+- the exact number of remaining valid completions;
+- whether the completion is unique;
+- the exact 1-9 distribution for the next empty cell (row-major);
+- the highest-probability candidate and whether it is guaranteed.
 
 Read a formatted puzzle from a file:
 
@@ -30,21 +47,33 @@ Or pipe a puzzle through stdin:
 cat puzzle.txt | sudokusolver
 ```
 
-Useful options:
-
-```text
---trials N   randomized completion trials (default 5000)
---seed N     reproducible random seed; 0 derives one from the puzzle
---verify     exactly verify whether at least one solution exists
---json       emit machine-readable JSON
---version    show build version and commit
-```
-
-Example:
+Machine-readable output:
 
 ```bash
-sudokusolver --verify --trials 10000 --file puzzle.txt
+sudokusolver --json --file puzzle.txt
 ```
+
+## Probability-guided solve
+
+Use `--solve` to repeatedly choose the candidate contained in the largest share of the remaining solution space:
+
+```bash
+sudokusolver --solve --file puzzle.txt
+```
+
+Each step reports the chosen cell, candidate probability, and how many valid completions remain after the choice. On a uniquely solvable Sudoku each step is guaranteed at 100%. On a multi-solution grid a choice below 100% is explicitly marked as a highest-probability branch rather than a logical certainty.
+
+JSON is also available for solve mode:
+
+```bash
+sudokusolver --solve --json --file puzzle.txt
+```
+
+## Exactness and performance
+
+Solution counts use arbitrary-precision integers, so the reported count does not overflow a fixed-width integer. The analysis is exact, not sampled.
+
+Exact enumeration can become expensive for extremely underconstrained grids with very large solution spaces. The intended input is a normal Sudoku puzzle or a partially completed Sudoku of ordinary difficulty.
 
 ## Downloads
 
