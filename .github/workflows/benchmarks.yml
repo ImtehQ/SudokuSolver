@@ -65,7 +65,7 @@ jobs:
           cmake -S .benchmark/tdoku -B .benchmark/tdoku/build -DARCH=native -DOPT=O3
           cmake --build .benchmark/tdoku/build --target tdoku_static --parallel 2
           gcc -O3 -march=native -I .benchmark/tdoku/include \
-            -c benchmarks/tdoku_adapter.c -o .benchmark/tdoku_adapter.o
+            -c scripts/tdoku_adapter.c -o .benchmark/tdoku_adapter.o
           g++ -O3 -march=native .benchmark/tdoku_adapter.o \
             .benchmark/tdoku/build/libtdoku_static.a -o .benchmark/tdoku_unique
 
