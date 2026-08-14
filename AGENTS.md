@@ -64,7 +64,7 @@ There are no database migration or external-service integration commands because
 
 ## Git Workflow
 
-Every logical change uses a new branch and PR. Never develop directly on `main`.
+Every logical development change uses a new branch and PR. Never develop directly on `main`.
 
 Preferred branch pattern:
 
@@ -87,17 +87,17 @@ PRs target `main`. Prefer squash merge when repository requirements allow it. Pr
 - `benchmarks/fixtures_test.go` requires every benchmark puzzle to be valid, uniquely solvable, and solvable using guaranteed probability-guided steps.
 - The benchmark workflow runs the normal project validation, builds the CLI once, then performs exact analysis and a full `--solve` for all four fixtures.
 - Each solver invocation has a timeout so an unexpectedly expensive benchmark fails visibly instead of running without a bound.
-- Detailed machine-readable results are uploaded as a workflow artifact.
-- The generated README section is delimited by `<!-- benchmark-results:start -->` and `<!-- benchmark-results:end -->`; do not hand-edit content between those markers.
-- Benchmark results are published through a separate README-only branch and pull request and then squash-merged. The workflow must never commit benchmark results directly to `main`.
-- README-only benchmark updates must not recursively trigger another benchmark run or duplicate software release.
+- Detailed JSON and a README-display SVG are uploaded as workflow artifacts.
+- The latest JSON/SVG are also committed to the dedicated `benchmark-results` branch. This generated-output branch may be updated by the workflow, but the workflow must never write benchmark results directly to `main`.
+- README embeds `benchmark-results.svg` from that dedicated branch, so results update without automated pull-request permissions.
+- Benchmark-result branch updates must not trigger a software release or recursive benchmark run.
 
 ## Releases / Deployment
 
 - `.github/workflows/release.yml` is the normal production distribution process.
 - It runs automatically on non-README pushes to `main`.
 - The version comes from `VERSION`; every new release-producing change must bump this semantic version before merge.
-- README-only benchmark result updates are intentionally excluded from the release trigger.
+- README-only changes are intentionally excluded from the release trigger.
 - The workflow refuses to reuse an existing tag.
 - It creates standalone Windows, macOS, and Linux archives plus SHA-256 checksums.
 - It smoke-tests the Linux x86-64 build before creating the GitHub Release.
@@ -112,6 +112,7 @@ A deployment is verified only after the Release workflow succeeds and the GitHub
 - **Persistent application state:** none
 - **Release artifacts:** persistent distribution artifacts; do not delete routinely
 - **Source history:** Git/GitHub history is persistent project history
+- **Benchmark results:** generated data on the `benchmark-results` branch; safe to regenerate from committed fixtures and source
 
 No application-data backup or restore mechanism is required because the CLI stores no production data. Do not describe source control as a tested disaster-recovery backup for user data.
 
@@ -125,7 +126,7 @@ Take special care with:
 
 - GitHub Actions permissions;
 - release credentials/tokens;
-- benchmark workflow write permissions and generated pull requests;
+- benchmark workflow write access to the dedicated results branch;
 - parsing untrusted puzzle/file input;
 - future network or update-check functionality if introduced.
 
@@ -139,6 +140,6 @@ For an applicable development request:
 inspect -> branch -> implement -> test -> validate -> commit -> push -> PR -> CI -> merge -> release -> release verification
 ```
 
-For changes affecting the solver or benchmark automation, also verify the post-merge benchmark workflow reaches a final result and that its README result update is published through its generated PR.
+For changes affecting the solver or benchmark automation, also verify the post-merge benchmark workflow reaches a final result, the `benchmark-results` branch contains results for the intended source commit, and the README references the live results asset.
 
 If permissions, mandatory review, Actions policy, or another external gate blocks a stage, stop at that exact stage and report what completed, what is blocked, production impact, next action, and whether a human must act.
