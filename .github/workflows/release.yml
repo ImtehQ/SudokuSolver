@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - README.md
 
 permissions:
   contents: write
@@ -44,6 +46,7 @@ jobs:
       - name: Validate
         run: |
           test -z "$(gofmt -l .)"
+          python3 -m unittest scripts.update_benchmark_readme_test
           go vet ./...
           go test ./...
       - name: Build standalone binaries
