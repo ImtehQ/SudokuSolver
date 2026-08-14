@@ -1,5 +1,5 @@
 {
-  "sudokusolver_commit": "f1dea73510a73342a2a5841d21481a7880d4a82b",
+  "sudokusolver_commit": "4bef1d2d4206a24c6b6dd7ed61ff8d6e3a9ca11f",
   "tdoku_commit": "af426180dc53aef89b82868e7b3fdfcf42165654",
   "sample_seed": 20260814,
   "sample_size": 10,
@@ -14,23 +14,23 @@
         "puzzles": 95,
         "successful": 95,
         "unique": 95,
-        "total_seconds": 0.054209138,
-        "puzzles_per_second": 1752.4720647651693,
-        "mean_milliseconds": 0.5658406736842106,
-        "median_milliseconds": 0.417745,
-        "p95_milliseconds": 1.4351486999999998,
-        "max_milliseconds": 2.153603,
+        "total_seconds": 0.047328127,
+        "puzzles_per_second": 2007.2630383196868,
+        "mean_milliseconds": 0.49299748421052625,
+        "median_milliseconds": 0.370376,
+        "p95_milliseconds": 1.0252647,
+        "max_milliseconds": 2.662222,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.05597463599999486
+        "wall_seconds": 0.04922856700000011
       },
       "tdoku_unique": {
         "puzzles": 95,
         "unique": 95,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.0023132549999971275,
-        "puzzles_per_second": 41067.67304085281
+        "wall_seconds": 0.0032022689999990916,
+        "puzzles_per_second": 29666.464622437074
       },
       "our_probability_solve": {
         "dataset": "Norvig Top95 (all 95)",
@@ -38,17 +38,17 @@
         "puzzles": 95,
         "successful": 95,
         "unique": 95,
-        "total_seconds": 0.220134139,
-        "puzzles_per_second": 431.55505289436275,
-        "mean_milliseconds": 2.312630305263158,
-        "median_milliseconds": 2.040716,
-        "p95_milliseconds": 4.2603374,
-        "max_milliseconds": 5.517872,
+        "total_seconds": 0.259930463,
+        "puzzles_per_second": 365.48236364277165,
+        "mean_milliseconds": 2.7311067789473693,
+        "median_milliseconds": 2.456099,
+        "p95_milliseconds": 4.4401294,
+        "max_milliseconds": 7.321919,
         "total_steps": 5742,
         "average_steps": 60.44210526315789,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.2216716910000045
+        "wall_seconds": 0.26169538300000283
       }
     },
     {
@@ -59,23 +59,23 @@
         "puzzles": 10,
         "successful": 10,
         "unique": 10,
-        "total_seconds": 0.001376589,
-        "puzzles_per_second": 7264.332346110568,
-        "mean_milliseconds": 0.13171709999999998,
-        "median_milliseconds": 0.0752035,
-        "p95_milliseconds": 0.3360894999999997,
-        "max_milliseconds": 0.449062,
+        "total_seconds": 0.001151226,
+        "puzzles_per_second": 8686.391724995787,
+        "mean_milliseconds": 0.11082030000000001,
+        "median_milliseconds": 0.083143,
+        "p95_milliseconds": 0.21371549999999997,
+        "max_milliseconds": 0.222558,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.002788136999996027
+        "wall_seconds": 0.0026762439999998833
       },
       "tdoku_unique": {
         "puzzles": 10,
         "unique": 10,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.0013050660000004655,
-        "puzzles_per_second": 7662.447722947677
+        "wall_seconds": 0.001805390000001239,
+        "puzzles_per_second": 5538.969419346035
       },
       "our_probability_solve": {
         "dataset": "Tdoku 17-clue (sample 10)",
@@ -83,17 +83,17 @@
         "puzzles": 10,
         "successful": 10,
         "unique": 10,
-        "total_seconds": 0.020792335,
-        "puzzles_per_second": 480.94646416576114,
-        "mean_milliseconds": 2.0735454,
-        "median_milliseconds": 2.1254805,
-        "p95_milliseconds": 2.41527405,
-        "max_milliseconds": 2.487882,
+        "total_seconds": 0.021820863,
+        "puzzles_per_second": 458.2770168164293,
+        "mean_milliseconds": 2.1772020000000003,
+        "median_milliseconds": 2.1315005,
+        "p95_milliseconds": 2.5097955499999998,
+        "max_milliseconds": 2.616806,
         "total_steps": 640,
         "average_steps": 64,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.02218694599999793
+        "wall_seconds": 0.02309944599999625
       }
     },
     {
@@ -104,23 +104,23 @@
         "puzzles": 10,
         "successful": 10,
         "unique": 10,
-        "total_seconds": 0.012699537,
-        "puzzles_per_second": 787.4302819071278,
-        "mean_milliseconds": 1.2642548999999998,
-        "median_milliseconds": 1.1676229999999999,
-        "p95_milliseconds": 2.0090188999999996,
-        "max_milliseconds": 2.172989,
+        "total_seconds": 0.014207535,
+        "puzzles_per_second": 703.8518645211853,
+        "mean_milliseconds": 1.4143360999999999,
+        "median_milliseconds": 1.2344789999999999,
+        "p95_milliseconds": 2.3456090499999993,
+        "max_milliseconds": 2.516839,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.013919256000001212
+        "wall_seconds": 0.01564524299999448
       },
       "tdoku_unique": {
         "puzzles": 10,
         "unique": 10,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.0017174130000014998,
-        "puzzles_per_second": 5822.711252326183
+        "wall_seconds": 0.0024081779999960418,
+        "puzzles_per_second": 4152.516965114886
       },
       "our_probability_solve": {
         "dataset": "Forum hardest 11+ (sample 10)",
@@ -128,17 +128,17 @@
         "puzzles": 10,
         "successful": 10,
         "unique": 10,
-        "total_seconds": 0.036486935,
-        "puzzles_per_second": 274.07070503455554,
-        "mean_milliseconds": 3.6431242000000004,
-        "median_milliseconds": 3.207709,
-        "p95_milliseconds": 5.938243199999998,
-        "max_milliseconds": 6.710481,
+        "total_seconds": 0.044349087,
+        "puzzles_per_second": 225.48378504387247,
+        "mean_milliseconds": 4.4278393,
+        "median_milliseconds": 3.9393615,
+        "p95_milliseconds": 6.971217249999996,
+        "max_milliseconds": 8.424166,
         "total_steps": 572,
         "average_steps": 57.2,
         "completed": true,
         "timed_out": false,
-        "wall_seconds": 0.03773421100000007
+        "wall_seconds": 0.04587791899999871
       }
     }
   ]
