@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	exactMemoSmallSlots       = 128
-	exactMemoLargeSlots       = 256
-	probabilityMemoSlots      = 256
-	exactMemoPressureCutoff   = 190
-	memoMaximumLoadNumerator  = 3
+	exactMemoSmallSlots        = 128
+	exactMemoLargeSlots        = 256
+	probabilityMemoSlots       = 256
+	exactMemoPressureCutoff    = 190
+	memoMaximumLoadNumerator   = 3
 	memoMaximumLoadDenominator = 4
 )
 
