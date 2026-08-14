@@ -6,6 +6,9 @@ from scripts import run_standard_benchmarks as standard
 
 
 class StandardBenchmarkTests(unittest.TestCase):
+    def test_default_sample_size_is_ten(self):
+        self.assertEqual(standard.DEFAULT_SAMPLE_SIZE, 10)
+
     def test_normalize_line_accepts_metadata(self):
         puzzle = "4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......"
         self.assertEqual(standard.normalize_line(puzzle + " rating=hard"), puzzle)
