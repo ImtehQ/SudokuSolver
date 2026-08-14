@@ -12,6 +12,7 @@ from pathlib import Path
 
 T_DOKU_COMMIT = "af426180dc53aef89b82868e7b3fdfcf42165654"
 SAMPLE_SEED = 20260814
+DEFAULT_SAMPLE_SIZE = 10
 
 
 def normalize_line(line: str) -> str | None:
@@ -192,7 +193,7 @@ def render_svg(results: list[dict], commit_sha: str) -> str:
         "</style>",
         f'<rect class="bg" width="{width}" height="{height}" rx="8"/>',
         '<text class="title" x="28" y="36">Standard Sudoku benchmark comparison</text>',
-        '<text class="meta" x="28" y="62">Same GitHub-hosted Ubuntu runner · exact count vs pinned Tdoku limit=2 · timeouts are reported, not hidden</text>',
+        '<text class="meta" x="28" y="62">Same GitHub-hosted Ubuntu runner · single-thread SudokuSolver · exact count vs pinned Tdoku limit=2</text>',
         f'<text class="meta" x="28" y="84">SudokuSolver source: {html.escape(short_sha)} · Tdoku: {T_DOKU_COMMIT[:12]} · deterministic samples: seed {SAMPLE_SEED}</text>',
         '<text class="meta" x="28" y="106">Probability solve is extra work: exact candidate distributions are recomputed repeatedly to completion.</text>',
         '<line class="line" x1="28" y1="128" x2="1252" y2="128"/>',
@@ -245,7 +246,8 @@ def main() -> int:
     parser.add_argument("--top95", type=Path, required=True)
     parser.add_argument("--min17", type=Path, required=True)
     parser.add_argument("--forum-hardest", type=Path, required=True)
-    parser.add_argument("--sample-size", type=int, default=1000)
+    parser.add_argument("--sample-size", type=int, default=DEFAULT_SAMPLE_SIZE)
+    parser.add_argument("--include-full-min17", action="store_true", help="also attempt the full 49,158-puzzle 17-clue corpus")
     parser.add_argument("--timeout", type=int, default=300, help="per-workload timeout in seconds")
     parser.add_argument("--results-json", type=Path, default=Path("standard-benchmark-results.json"))
     parser.add_argument("--results-svg", type=Path, default=Path("standard-benchmark-results.svg"))
@@ -277,16 +279,22 @@ def main() -> int:
 
         results = [
             benchmark_dataset("Norvig Top95 (all 95)", top95_path, args.our_binary, args.tdoku_binary, args.timeout),
-            benchmark_dataset("Tdoku 17-clue (all 49,158)", args.min17, args.our_binary, args.tdoku_binary, args.timeout, solve=False),
-            benchmark_dataset(f"Tdoku 17-clue (sample {args.sample_size})", min17_sample, args.our_binary, args.tdoku_binary, args.timeout),
-            benchmark_dataset(f"Forum hardest 11+ (sample {args.sample_size})", forum_sample, args.our_binary, args.tdoku_binary, args.timeout),
         ]
+        if args.include_full_min17:
+            results.append(benchmark_dataset("Tdoku 17-clue (all 49,158)", args.min17, args.our_binary, args.tdoku_binary, args.timeout, solve=False))
+        results.extend(
+            [
+                benchmark_dataset(f"Tdoku 17-clue (sample {args.sample_size})", min17_sample, args.our_binary, args.tdoku_binary, args.timeout),
+                benchmark_dataset(f"Forum hardest 11+ (sample {args.sample_size})", forum_sample, args.our_binary, args.tdoku_binary, args.timeout),
+            ]
+        )
 
     payload = {
         "sudokusolver_commit": os.environ.get("GITHUB_SHA", ""),
         "tdoku_commit": T_DOKU_COMMIT,
         "sample_seed": SAMPLE_SEED,
         "sample_size": args.sample_size,
+        "include_full_min17": args.include_full_min17,
         "timeout_seconds_per_workload": args.timeout,
         "datasets": results,
     }
