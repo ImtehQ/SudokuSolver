@@ -342,29 +342,6 @@ func (state *searchState) place(idx int, digit uint8) {
 	state.boxUsed[box] |= bit
 }
 
-func stateUnitsViable(state *searchState) bool {
-	for i := 0; i < Size; i++ {
-		if !stateUnitViable(state, rowCells(i)) || !stateUnitViable(state, colCells(i)) || !stateUnitViable(state, boxCells(i)) {
-			return false
-		}
-	}
-	return true
-}
-
-func stateUnitViable(state *searchState, cells [Size]int) bool {
-	present := uint16(0)
-	available := uint16(0)
-	for _, idx := range cells {
-		if digit := state.grid[idx]; digit != 0 {
-			present |= 1 << digit
-		} else {
-			available |= state.candidateMask(idx)
-		}
-	}
-	missing := allDigitsMask &^ present
-	return missing&^available == 0
-}
-
 func propagateStateSingles(state *searchState) bool {
 	for {
 		changed := false
@@ -382,13 +359,74 @@ func propagateStateSingles(state *searchState) bool {
 				changed = true
 			}
 		}
-		if !stateUnitsViable(state) {
+		if changed {
+			continue
+		}
+
+		hiddenChanged, viable := propagateHiddenStateSingle(state)
+		if !viable {
 			return false
 		}
-		if !changed {
-			return true
+		if hiddenChanged {
+			continue
+		}
+		return true
+	}
+}
+
+func propagateHiddenStateSingle(state *searchState) (bool, bool) {
+	for unit := 0; unit < Size; unit++ {
+		if changed, viable := propagateHiddenStateSingleInUnit(state, rowCells(unit)); !viable || changed {
+			return changed, viable
+		}
+		if changed, viable := propagateHiddenStateSingleInUnit(state, colCells(unit)); !viable || changed {
+			return changed, viable
+		}
+		if changed, viable := propagateHiddenStateSingleInUnit(state, boxCells(unit)); !viable || changed {
+			return changed, viable
 		}
 	}
+	return false, true
+}
+
+func propagateHiddenStateSingleInUnit(state *searchState, cells [Size]int) (bool, bool) {
+	missing := allDigitsMask
+	var candidateCounts [10]uint8
+	var candidatePositions [10]int
+
+	for _, idx := range cells {
+		if digit := state.grid[idx]; digit != 0 {
+			missing &^= uint16(1) << digit
+		}
+	}
+
+	for _, idx := range cells {
+		if state.grid[idx] != 0 {
+			continue
+		}
+		mask := state.candidateMask(idx) & missing
+		for mask != 0 {
+			digit := bits.TrailingZeros16(mask)
+			candidateCounts[digit]++
+			candidatePositions[digit] = idx
+			mask &= mask - 1
+		}
+	}
+
+	for digit := uint8(1); digit <= 9; digit++ {
+		bit := uint16(1) << digit
+		if missing&bit == 0 {
+			continue
+		}
+		switch candidateCounts[digit] {
+		case 0:
+			return false, false
+		case 1:
+			state.place(candidatePositions[digit], digit)
+			return true, true
+		}
+	}
+	return false, true
 }
 
 type exactCounter struct {
