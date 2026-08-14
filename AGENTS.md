@@ -54,12 +54,13 @@ Validation:
 
 ```bash
 test -z "$(gofmt -l .)"
+python3 -m unittest scripts.update_benchmark_readme_test
 go vet ./...
 go test ./...
 go build ./cmd/sudokusolver
 ```
 
-There are no integration, E2E, database migration, or formatting-tool commands beyond the checks above because the application has no external services or database.
+There are no database migration or external-service integration commands because the application has no external services or database.
 
 ## Git Workflow
 
@@ -76,14 +77,27 @@ PRs target `main`. Prefer squash merge when repository requirements allow it. Pr
 ## CI
 
 - `.github/workflows/ci.yml` runs on pull requests and pushes to `main`.
-- It checks `gofmt`, `go vet`, `go test`, and `go build`.
+- It checks `gofmt`, benchmark-tooling unit tests, `go vet`, `go test`, and `go build`.
 - Do not claim CI succeeded until the workflow reaches a successful conclusion.
+
+## Automatic Sudoku Benchmarks
+
+- `.github/workflows/benchmarks.yml` runs after non-README pushes to `main` and can also be dispatched manually.
+- Fixed fixtures live in `benchmarks/puzzles.json` and are named Easy, Medium, Hard, and Impossible. These are project benchmark profiles, not a universal difficulty standard.
+- `benchmarks/fixtures_test.go` requires every benchmark puzzle to be valid, uniquely solvable, and solvable using guaranteed probability-guided steps.
+- The benchmark workflow runs the normal project validation, builds the CLI once, then performs exact analysis and a full `--solve` for all four fixtures.
+- Each solver invocation has a timeout so an unexpectedly expensive benchmark fails visibly instead of running without a bound.
+- Detailed machine-readable results are uploaded as a workflow artifact.
+- The generated README section is delimited by `<!-- benchmark-results:start -->` and `<!-- benchmark-results:end -->`; do not hand-edit content between those markers.
+- Benchmark results are published through a separate README-only branch and pull request and then squash-merged. The workflow must never commit benchmark results directly to `main`.
+- README-only benchmark updates must not recursively trigger another benchmark run or duplicate software release.
 
 ## Releases / Deployment
 
 - `.github/workflows/release.yml` is the normal production distribution process.
-- It runs automatically on pushes to `main`.
+- It runs automatically on non-README pushes to `main`.
 - The version comes from `VERSION`; every new release-producing change must bump this semantic version before merge.
+- README-only benchmark result updates are intentionally excluded from the release trigger.
 - The workflow refuses to reuse an existing tag.
 - It creates standalone Windows, macOS, and Linux archives plus SHA-256 checksums.
 - It smoke-tests the Linux x86-64 build before creating the GitHub Release.
@@ -111,6 +125,7 @@ Take special care with:
 
 - GitHub Actions permissions;
 - release credentials/tokens;
+- benchmark workflow write permissions and generated pull requests;
 - parsing untrusted puzzle/file input;
 - future network or update-check functionality if introduced.
 
@@ -123,5 +138,7 @@ For an applicable development request:
 ```text
 inspect -> branch -> implement -> test -> validate -> commit -> push -> PR -> CI -> merge -> release -> release verification
 ```
+
+For changes affecting the solver or benchmark automation, also verify the post-merge benchmark workflow reaches a final result and that its README result update is published through its generated PR.
 
 If permissions, mandatory review, Actions policy, or another external gate blocks a stage, stop at that exact stage and report what completed, what is blocked, production impact, next action, and whether a human must act.
