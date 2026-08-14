@@ -46,7 +46,7 @@ jobs:
       - name: Validate
         run: |
           test -z "$(gofmt -l .)"
-          python3 -m unittest scripts.update_benchmark_readme_test
+          python3 -m unittest scripts.update_benchmark_readme_test scripts.run_standard_benchmarks_test
           go vet ./...
           go test ./...
       - name: Build standalone binaries
