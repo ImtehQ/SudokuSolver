@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="324" viewBox="0 0 1040 324" role="img" aria-label="Latest SudokuSolver benchmark results">
+<style>
+.bg{fill:#ffffff}.title{font:700 22px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;fill:#1f2328}
+.meta{font:13px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;fill:#57606a}
+.head{font:600 13px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;fill:#1f2328}
+.cell{font:13px ui-monospace,SFMono-Regular,Consolas,monospace;fill:#1f2328}
+.line{stroke:#d0d7de;stroke-width:1}
+</style>
+<rect class="bg" width="1040" height="324" rx="8"/>
+<text class="title" x="28" y="36">SudokuSolver automatic benchmarks</text>
+<text class="meta" x="28" y="62">Exact analysis + probability-guided full solve on a GitHub-hosted Ubuntu runner</text>
+<text class="meta" x="28" y="84">Source commit: 7953863c6d65 · timings vary between runners</text>
+<line class="line" x1="28" y1="106" x2="1012" y2="106"/>
+<text class="head" x="28" y="132">Difficulty</text>
+<text class="head" x="210" y="132">Givens</text>
+<text class="head" x="330" y="132">Completions</text>
+<text class="head" x="490" y="132">Analysis</text>
+<text class="head" x="625" y="132">Solve steps</text>
+<text class="head" x="770" y="132">Full solve</text>
+<text class="head" x="915" y="132">Result</text>
+<line class="line" x1="28" y1="142" x2="1012" y2="142"/>
+<text class="cell" x="28" y="158">Easy</text>
+<text class="cell" x="210" y="158">47</text>
+<text class="cell" x="330" y="158">1</text>
+<text class="cell" x="490" y="158">2 ms</text>
+<text class="cell" x="625" y="158">34</text>
+<text class="cell" x="770" y="158">3 ms</text>
+<text class="cell" x="915" y="158">Solved</text>
+<line class="line" x1="28" y1="170" x2="1012" y2="170"/>
+<text class="cell" x="28" y="192">Medium</text>
+<text class="cell" x="210" y="192">30</text>
+<text class="cell" x="330" y="192">1</text>
+<text class="cell" x="490" y="192">1 ms</text>
+<text class="cell" x="625" y="192">51</text>
+<text class="cell" x="770" y="192">4 ms</text>
+<text class="cell" x="915" y="192">Solved</text>
+<line class="line" x1="28" y1="204" x2="1012" y2="204"/>
+<text class="cell" x="28" y="226">Hard</text>
+<text class="cell" x="210" y="226">28</text>
+<text class="cell" x="330" y="226">1</text>
+<text class="cell" x="490" y="226">2 ms</text>
+<text class="cell" x="625" y="226">53</text>
+<text class="cell" x="770" y="226">5 ms</text>
+<text class="cell" x="915" y="226">Solved</text>
+<line class="line" x1="28" y1="238" x2="1012" y2="238"/>
+<text class="cell" x="28" y="260">Impossible</text>
+<text class="cell" x="210" y="260">21</text>
+<text class="cell" x="330" y="260">1</text>
+<text class="cell" x="490" y="260">166 ms</text>
+<text class="cell" x="625" y="260">60</text>
+<text class="cell" x="770" y="260">214 ms</text>
+<text class="cell" x="915" y="260">Solved</text>
+<line class="line" x1="28" y1="272" x2="1012" y2="272"/>
+</svg>

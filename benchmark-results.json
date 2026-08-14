@@ -1,0 +1,42 @@
+[
+  {
+    "difficulty": "Easy",
+    "givens": 47,
+    "remaining_solutions": "1",
+    "analysis_seconds": 0.0018346930000063821,
+    "solve_steps": 34,
+    "solve_seconds": 0.0029707440000095175,
+    "solved": true,
+    "final_grid": "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+  },
+  {
+    "difficulty": "Medium",
+    "givens": 30,
+    "remaining_solutions": "1",
+    "analysis_seconds": 0.0013724270000068373,
+    "solve_steps": 51,
+    "solve_seconds": 0.0035559579999926427,
+    "solved": true,
+    "final_grid": "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+  },
+  {
+    "difficulty": "Hard",
+    "givens": 28,
+    "remaining_solutions": "1",
+    "analysis_seconds": 0.0018653019999987919,
+    "solve_steps": 53,
+    "solve_seconds": 0.005099072000007254,
+    "solved": true,
+    "final_grid": "462831957795426183381795426173984265659312748248567319926178534834259671517643892"
+  },
+  {
+    "difficulty": "Impossible",
+    "givens": 21,
+    "remaining_solutions": "1",
+    "analysis_seconds": 0.1664201730000059,
+    "solve_steps": 60,
+    "solve_seconds": 0.21391351100001543,
+    "solved": true,
+    "final_grid": "812753649943682175675491283154237896369845721287169534521974368438526917796318452"
+  }
+]
